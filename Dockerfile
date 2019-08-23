@@ -43,6 +43,7 @@ RUN \
 	libxslt-dev \
 	linux-headers \
 	make \
+	mesa-dri-ati \
 	openssl-dev \
 	opus-dev \
 	patch \
