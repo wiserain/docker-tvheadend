@@ -1,7 +1,7 @@
 #!/bin/sh
 # tv_grab_file for getting your own xmltv
 DESC="KLIVE EPG GRABBER"
-VER="1.1"
+VER="1.2"
 CAP="baseline"
 
 for arg
@@ -24,13 +24,30 @@ fi
 
 args="${args:1:${#args}}"
 
-wget -q -O /epg2xml/klive.xml "${args}"
-if [ $? -ne 0 ]; then
-  echo "ERROR: Invalid download url for xmltv"
-  echo "ERROR: ${args}"
-  exit 2
-else
-  cat /epg2xml/klive.xml
-fi
+i=0
+gen_info=''
+for url in $(echo $args | sed "s/|/ /g")
+do
+  xmltv_path="/epg2xml/klive-${i}.xml"
+  wget -q -O "${xmltv_path}" "${url}"
+  if [ $? -ne 0 ]; then
+    # rm intermediate and log to file
+    rm "${xmltv_path}"
+    printf "ERROR: Invalid download url for xmltv\nERROR: ${url}\n" > "$(echo "${xmltv_path}" | sed 's/\.xml$/.log/g')"
+  else
+    gen_info="${gen_info:+${gen_info} + }$(sed -n 's/.[^ ]* generator-info-name="\([^"]*\).*/\1/p' ${xmltv_path})"
+  fi
+  i=$((i+1))
+done
+
+# grep <channel> and <programme> from klive-*.xml files and merge into a single file
+xml_grep --cond channel --cond programme --desc "generator-info-name=\"${gen_info}\"" \
+  --pretty_print indented --wrap tv --encoding 'UTF-8' /epg2xml/klive-*.xml > /epg2xml/klive.xml
+
+# remove intermediate klive-*.xml files
+rm /epg2xml/klive-*.xml
+
+# finally cat
+cat /epg2xml/klive.xml
 
 exit 0
