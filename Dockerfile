@@ -1,4 +1,4 @@
-FROM lsiobase/alpine:3.10 as buildstage
+FROM lsiobase/alpine:3.11 as buildstage
 ############## build stage ##############
 
 # package versions
@@ -130,6 +130,8 @@ RUN \
  git clone https://github.com/XMLTV/xmltv.git /tmp/xmltv && \
  cd /tmp/xmltv && \
  git checkout ${XMLTV_VER} && \
+ echo "**** Fix test for xmltv alpine 3.11 ****" && \
+ patch -p1 -i /tmp/patches/test_tv_imdb.t.patch && \
  echo "**** Perl 5.26 fixes for XMTLV ****" && \
  sed "s/use POSIX 'tmpnam';//" -i filter/tv_to_latex && \
  sed "s/use POSIX 'tmpnam';//" -i filter/tv_to_text && \
@@ -215,7 +217,7 @@ RUN \
  make DESTDIR=/tmp/comskip-build install
 
 ############## runtime stage ##############
-FROM lsiobase/alpine:3.10
+FROM lsiobase/alpine:3.11
 
 # set version label
 ARG BUILD_DATE
@@ -329,4 +331,4 @@ COPY root/ /
 
 # ports and volumes
 EXPOSE 9981 9982
-VOLUME /config /recordings
+VOLUME /config
