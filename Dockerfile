@@ -4,7 +4,7 @@ FROM lsiobase/alpine:3.10 as buildstage
 # package versions
 ARG ARGTABLE_VER="2.13"
 ARG TVH_VER="release/4.2"
-ARG XMLTV_VER="v0.5.70"
+ARG XMLTV_VER="v0.6.1"
 ARG TVHEADEND_COMMIT
 
 # environment settings
@@ -31,11 +31,11 @@ RUN \
 	gcc \
 	gettext-dev \
 	git \
+	gnu-libiconv-dev \
 	gzip \
 	jq \
 	libdvbcsa-dev \
 	libgcrypt-dev \
-	libhdhomerun-dev \
 	libressl-dev \
 	libtool \
 	libvpx-dev \
@@ -108,10 +108,7 @@ RUN \
 	wget \
 	x264-dev \
 	x265-dev \
-	zlib-dev && \
- apk add --no-cache \
-	--repository http://dl-cdn.alpinelinux.org/alpine/edge/community \
-	gnu-libiconv-dev
+	zlib-dev
 
 RUN \
  echo "**** remove musl iconv.h and replace with gnu-iconv.h ****" && \
@@ -234,7 +231,6 @@ RUN \
 	libcrypto1.1 \
 	libcurl	\
 	libdvbcsa \
-	libhdhomerun-libs \
 	libressl \
 	libssl1.1 \
 	libvpx \
@@ -323,4 +319,4 @@ COPY root/ /
 
 # ports and volumes
 EXPOSE 9981 9982
-VOLUME /config /recordings
+VOLUME /config
