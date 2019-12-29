@@ -1,7 +1,7 @@
 # package version
 ARG BASE_IMAGE
 FROM $BASE_IMAGE
-MAINTAINER wiserain
+LABEL maintainer="wiserain"
 
 # default variables
 ENV UPDATE_EPG2XML="1"
@@ -43,5 +43,5 @@ RUN \
 
 # ports and volumes
 EXPOSE 9981 9982
-VOLUME /config /recordings /epg2xml
+VOLUME /config /epg2xml
 WORKDIR /epg2xml
