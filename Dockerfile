@@ -30,12 +30,12 @@ RUN \
 	gcc \
 	gettext-dev \
 	git \
+	gnu-libiconv-dev \
 	gzip \
 	jq \
 	libcurl \
 	libdvbcsa-dev \
 	libgcrypt-dev \
-	libhdhomerun-dev \
 	libtool \
 	libva-dev \
 	libvpx-dev \
@@ -110,10 +110,7 @@ RUN \
 	wget \
 	x264-dev \
 	x265-dev \
-	zlib-dev && \
- apk add --no-cache \
-	--repository http://dl-cdn.alpinelinux.org/alpine/edge/community \
-	gnu-libiconv-dev
+	zlib-dev	
 
 RUN \
  echo "**** remove musl iconv.h and replace with gnu-iconv.h ****" && \
@@ -238,7 +235,6 @@ RUN \
 	libcrypto1.1 \
 	libcurl \
 	libdvbcsa \
-	libhdhomerun-libs \
 	libssl1.1 \
 	libva \
 	libva-intel-driver \
@@ -329,4 +325,4 @@ COPY root/ /
 
 # ports and volumes
 EXPOSE 9981 9982
-VOLUME /config /recordings
+VOLUME /config
