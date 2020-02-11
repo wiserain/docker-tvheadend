@@ -101,6 +101,7 @@ RUN \
 	perl-xml-treepp \
 	perl-xml-twig \
 	perl-xml-writer \
+	py3-requests \
 	pkgconf \
 	pngquant \
 	python \
@@ -273,6 +274,7 @@ RUN \
 	perl-io-socket-ssl \
 	perl-io-stringy \
 	perl-json \
+	perl-json-xs \
 	perl-libwww \
 	perl-lingua-en-numbers-ordinate \
 	perl-lingua-preferred \
