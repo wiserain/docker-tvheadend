@@ -227,6 +227,7 @@ RUN \
 	curl \
 	ffmpeg \
 	ffmpeg-libs \
+	gnu-libiconv \
 	gzip \
 	libcrypto1.1 \
 	libcurl	\
@@ -298,9 +299,6 @@ RUN \
 	x264 \
 	x265 \
 	zlib && \
- apk add --no-cache \
-	--repository http://dl-cdn.alpinelinux.org/alpine/edge/community \
-	gnu-libiconv && \
  echo "**** Add Picons ****" && \
  mkdir -p /picons && \
  curl -o \
