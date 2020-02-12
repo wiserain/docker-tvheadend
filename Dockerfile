@@ -1,4 +1,4 @@
-FROM lsiobase/alpine:3.10 as buildstage
+FROM lsiobase/alpine:3.11 as buildstage
 ############## build stage ##############
 
 # package versions
@@ -76,6 +76,7 @@ RUN \
 	perl-io-socket-ssl \
 	perl-io-stringy \
 	perl-json \
+	perl-json-xs \
 	perl-libwww \
 	perl-lingua-en-numbers-ordinate \
 	perl-lingua-preferred \
@@ -101,7 +102,6 @@ RUN \
 	perl-xml-treepp \
 	perl-xml-twig \
 	perl-xml-writer \
-	py3-requests \
 	pkgconf \
 	pngquant \
 	python \
@@ -111,7 +111,7 @@ RUN \
 	wget \
 	x264-dev \
 	x265-dev \
-	zlib-dev	
+	zlib-dev
 
 RUN \
  echo "**** remove musl iconv.h and replace with gnu-iconv.h ****" && \
@@ -128,6 +128,8 @@ RUN \
  git clone https://github.com/XMLTV/xmltv.git /tmp/xmltv && \
  cd /tmp/xmltv && \
  git checkout ${XMLTV_VER} && \
+ echo "**** Fix test for xmltv alpine 3.11 ****" && \
+ patch -p1 -i /tmp/patches/test_tv_imdb.t.patch && \
  echo "**** Perl 5.26 fixes for XMTLV ****" && \
  sed "s/use POSIX 'tmpnam';//" -i filter/tv_to_latex && \
  sed "s/use POSIX 'tmpnam';//" -i filter/tv_to_text && \
@@ -152,6 +154,9 @@ RUN \
  git clone https://github.com/tvheadend/tvheadend.git /tmp/tvheadend && \
  cd /tmp/tvheadend && \
  git checkout ${TVHEADEND_COMMIT} && \
+ echo "**** use ffmpeg 4.1.5 minimum requirement for gcc9 with alpine 3.11 ****" && \
+ sed -i 's/ffmpeg-4.1.1/ffmpeg-4.1.5/g' Makefile.ffmpeg && \
+ sed -i 's/9076734d98fb8d6ad1cff8f8f68228afa0bb2204/850ca59493aa6d773a1346257c9fbee80ba6efe0/g' Makefile.ffmpeg && \
  ./configure \
 	`#Encoding` \
  	--enable-libffmpeg_static \
@@ -213,7 +218,7 @@ RUN \
  make DESTDIR=/tmp/comskip-build install
 
 ############## runtime stage ##############
-FROM lsiobase/alpine:3.10
+FROM lsiobase/alpine:3.11
 
 # set version label
 ARG BUILD_DATE
@@ -232,6 +237,7 @@ RUN \
 	curl \
 	ffmpeg \
 	ffmpeg-libs \
+	gnu-libiconv \
 	gzip \
 	libcrypto1.1 \
 	libcurl \
@@ -300,16 +306,13 @@ RUN \
 	perl-xml-treepp \
 	perl-xml-twig \
 	perl-xml-writer \
-	python \
+	py3-requests \
 	tar \
 	uriparser \
 	wget \
 	x264 \
 	x265 \
 	zlib && \
- apk add --no-cache \
-	--repository http://dl-cdn.alpinelinux.org/alpine/edge/community \
-	gnu-libiconv && \
  echo "**** Add Picons ****" && \
  mkdir -p /picons && \
  curl -o \
