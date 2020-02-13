@@ -1,51 +1,47 @@
 #!/usr/bin/with-contenv bash
 
 # prepare epg2xml
-if [ "${EPG2XML_VER}" == "latest" ]; then
-	EPG2XML_URL="https://github.com/${EPG2XML_FROM}/epg2xml.git"
-	if ! (git clone --quiet "${EPG2XML_URL}" > /dev/null /tmp); then
-		echo "ERROR: Invalid download url for epg2xml"
-		echo "ERROR: ${EPG2XML_URL}"
-		exit 0
-	fi
-else
-	# now assuming EPG2XML_VER is version tag
-	EPG2XML_URL="https://api.github.com/repos/${EPG2XML_FROM}/epg2xml/tarball/v${EPG2XML_VER}"
-	if [[ `wget -S --spider "${EPG2XML_URL}" 2>&1 | grep 'HTTP/1.1 200 OK'` ]]; then
-		wget -q "${EPG2XML_URL}" -P /tmp
-		tar -xzf "/tmp/v${EPG2XML_VER}" --strip 1
-	else
-		echo "ERROR: Invalid download url for epg2xml"
-		echo "ERROR: ${EPG2XML_URL}"
-		exit 0
-	fi
+EPG2XML_GIT="https://github.com/${EPG2XML_FROM:-wiserain}/epg2xml.git"
+if ! (git clone --quiet "${EPG2XML_GIT}" > /dev/null /tmp/epg2xml); then
+	echo "ERROR: Invalid repository url for epg2xml"
+	echo "ERROR: ${EPG2XML_GIT}"
+	exit 1
+fi
+
+if [[ ! -z "${EPG2XML_VER}" ]] && [[ -d "/tmp/epg2xml/.git" ]]; then
+	echo " INFO: Checking out to \"${EPG2XML_VER}\""
+	cd /tmp/epg2xml && git checkout "${EPG2XML_VER}"
 fi
 
 # make folder
-[[ ! -d "/epg2xml" ]] && mkdir /epg2xml
+[[ ! -d "/epg2xml/xml" ]] && mkdir /epg2xml/xml
 
-# update epg2xml main scripts
-if [[ "${UPDATE_EPG2XML}" == "1" ]]; then
-	echo "Installing epg2xml ${EPG2XML_VER}"
-	mv /tmp/*.php /epg2xml/
-	# also install epg2xml.json if not exist
-	[[ ! -f /epg2xml/epg2xml.json ]] && \
-		mv /tmp/epg2xml.json /epg2xml/ && \
-		echo "epg2xml.json installed"
+# install epg2xml.py
+if [[ "${UPDATE_EPG2XML}" == "1" ]] || [[ ! -f "/epg2xml/epg2xml.py" ]]; then
+	echo "Installing epg2xml.py ..."
+	mv /tmp/epg2xml/epg2xml.py /epg2xml/ 2>/dev/null
 else
-	echo "Skipping epg2xml install"
+	echo "Using existing epg2xml.py. Skipping installation ..."
+fi
+
+# install epg2xml.json as well if not exist
+if [[ ! -f /epg2xml/epg2xml.json ]]; then
+	echo "Installing epg2xml.json ..."
+	mv /tmp/epg2xml/epg2xml.json /epg2xml/ 2>/dev/null
+else
+	echo "Using existing epg2xml.json. Skipping installation ..."
 fi
 
 # update Channel.json
 if [[ ! -f /epg2xml/Channel.json ]] || [[ "${UPDATE_CHANNEL}" == "1" ]]; then
-	CH_URL="https://raw.githubusercontent.com/${CHANNEL_FROM}/Channel.json/master/Channel.json"
+	CH_URL="https://raw.githubusercontent.com/${CHANNEL_FROM:-wonipapa}/Channel.json/master/Channel.json"
 	if [[ `wget -S --spider "${CH_URL}" 2>&1 | grep 'HTTP/1.1 200 OK'` ]]; then
 		wget -q "${CH_URL}" -O /epg2xml/Channel.json
 		echo "Channel.json updated"
 	else
 		echo "ERROR: Invalid download url for Channel.json"
 		echo "ERROR: ${CH_URL}"
-		exit 0
+		exit 1
 	fi
 fi
 

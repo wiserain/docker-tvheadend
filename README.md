@@ -67,7 +67,7 @@ Socket으로 직접 밀어 넣는 external grabber와 달리 내부적으로 cro
 
 ## 관련 설정들
 
-#### 이미지 태그 네이밍 규칙
+### 이미지 태그 네이밍 규칙
 
 - **latest**: 최신 이미지 버전. [새로운 기능](https://tvheadend.org/projects/tvheadend/roadmap)을 체험할 수 있는 개발 버전으로 약간 불안정할 수 있다. 비유를 들자면 Firefox나 LineageOS의 Nightly 빌드, 아니면 iOS의 Public Beta와 유사하다.
 - **stable**: 최신 tvheadend release 버전 [참고](https://doozer.io/tvheadend/tvheadend)
@@ -76,36 +76,42 @@ Socket으로 직접 밀어 넣는 external grabber와 달리 내부적으로 cro
 
 사용 가능한 모든 이미지 버전은 [여기](https://hub.docker.com/r/wiserain/tvheadend/tags/)서 확인할 수 있는데, 마지막에 숫자로 끝나는 것은 해당 태그의 해당 tvheadend 버전을 말하며, ```-ns```는 non-static build를 의미한다. 특별한 일이 없으면 매주 한 번 새롭게 빌드 된다.
 
-#### 네트워크 모드
+### 네트워크 모드
 
 docker는 멀티캐스트 패킷 라우팅이 안되기 때문에 tvheadend를 이용해 IPTV를 보기 위해서는 무조건 ```hosted network```를 사용해야 한다. 일부 낮은 docker engine 버전(예를 들어 Synology DSM 5.2)에서는 지원하지 않으니 참고. ```hosted network```란 포트 포워딩이나 매핑을 하지 않고 호스트의 네트워크에 그대로 붙인다는 의미이므로 tvheadend가 사용하는 포트를 바꾸고 싶다면 앱 실행 시 옵션을 주어서 변경해야 한다. docker에서는 다음과 같이 환경 변수를 추가해주면 된다. ```RUN_OPTS=--http_port <port number> --htsp_port <port number>```
 
-#### 환경변수
+### 환경변수
 
-docker-tvheadend의 동작을 제어하는 환경변수와 가능한 옵션을 설명한다. 참고로 환경변수는 컨테이너 생성 시점에 그 값이 고정 되므로 변경을 원한다면 컨테이너를 삭제/재생성 해야한다. 먼저 필수로 지정해야하는 ```환경변수=기본값```는 다음과 같다.
+docker-tvheadend의 동작을 제어하는 환경변수와 가능한 옵션을 설명한다. 참고로 환경변수는 컨테이너 생성 시점에 그 값이 고정 되므로 변경을 원한다면 컨테이너를 삭제/재생성 해야한다. 먼저 필수로 지정해야하는 환경변수는 다음과 같다.
 
-- ```PUID```, ```PGUI```: 컨테이너 내부의 앱이 외부의 볼륨에 접근할 수 있도록 하는 권한에 대한 것이다. [여기](https://github.com/linuxserver/docker-tvheadend#user--group-identifiers)를 참고하여 설정한다. 적절하게 설정하지 않으면, EPG 관련 스크립트가 동작하지 않거나 녹화가 안될 수 있다.
-- ```TZ="Asia/Seoul"```: docker-tvheadend에 적용되는 timezone 설정이다. 이게 제대로 안되면 EPG에 시간차가 발생한다.
+| 이름  | 설명  | 기본값 |
+|---|---|---|
+| ```PUID``` / ```PGID```  | 컨테이너 내부의 앱이 외부의 볼륨에 접근할 수 있도록 하는 권한에 대한 것이다. [여기](https://github.com/linuxserver/docker-tvheadend#user--group-identifiers)를 참고하여 설정한다. 적절하게 설정하지 않으면, EPG 관련 스크립트가 동작하지 않거나 녹화가 안될 수 있다.  | ```911``` / ```911```  |
+| ```TZ```  | docker-tvheadend에 적용되는 timezone 설정이다. 이게 제대로 안되면 EPG에 시간차가 발생한다.  | ```Asia/Seoul```  |
 
 epg2xml 관련 환경변수는 다음과 같다.
 
-- ```UPDATE_EPG2XML="1"```: epg2xml을 업데이트 하고 싶지 않다면 ```"1"```이 아닌 값을 입력한다.
-- ```EPG2XML_VER="latest"```: github 저장소의 default branch (보통은 master)에서 epg2xml 스크립트를 가져온다. wonipapa님의 개발 중단으로 인해 각자 도생하고 있는 현재의 상황에 보다 유연하게 대응하고자 어디서 가져올 것인지 ```EPG2XML_FROM="wiserain"```을 통해서 지정할 수 있다. 정확하게는 ```git clone https://github.com/${EPG2XML_FROM}/epg2xml.git``` 명령어로 가져온다. 그 외의 값은 버전 태그로 간주하고 release에서 가져온다. 예를 들면 ```EPG2XML_VER=1.2.1```. 과거 버전이 더 안정적이지도 않고 버전 관리도 없는 지금, 큰 의미는 없다.
-- ```UPDATE_CHANNEL="1"```: epg2xml의 채널 정보를 담고 있는 ```Channel.json``` 파일을 업데이트 한다. 더이상 업데이트 하지 않기를 원하면 ```"1"```이 아닌 값을 입력한다.
-- ```CHANNEL_FROM="wonipapa"```: epg2xml 스크립트와 마찬가지로 Channel.json을 어디에서 가져올지 지정할 수 있다.
+| 이름  | 설명  | 기본값 |
+|---|---|---|
+| ```EPG2XML_FROM```  | wonipapa님의 개발 중단으로 인해 각자 도생하고 있는 현재의 상황에 보다 유연하게 대응하고자 어디서 가져올 것인지 ```EPG2XML_FROM="wiserain"```을 통해서 지정할 수 있다. 정확하게는 ```git clone https://github.com/${EPG2XML_FROM}/epg2xml.git``` 명령어로 가져온다.   | ```wiserain```  |
+| ```EPG2XML_VER```  | master가 아닌 특정 commit나 branch의 버전을 사용하고자 할 경우 입력한다. ```git checkout ${BRANCH or SHA1}```   | ```null```  |
+| ```UPDATE_EPG2XML```  | epg2xml을 업데이트 하고 싶지 않다면 ```1```이 아닌 값을 입력한다. ```epg2xml.json```은 이 값에 관계없이 파일이 없을때만 설치한다. | ```1```  |
+| ```CHANNEL_FROM```  | epg2xml 스크립트와 마찬가지로 Channel.json을 어디에서 가져올지 지정할 수 있다. | ```wonipapa```  |
+| ```UPDATE_CHANNEL```  | 채널 정보를 담고 있는 ```Channel.json``` 파일을 업데이트 한다. 더이상 업데이트 하지 않기를 원하면 ```1```이 아닌 값을 입력한다. | ```1```  |
 
 추가로 사용 가능한 환경변수는 다음과 같다.
 
-- ```RUN_OPTS=--http_port <port number> --htsp_port <port number>```: tvheadend 바이너리에 직접 전달되는 실행옵션. 대표적으로 tvheadend의 동작 포트를 바꿀때 쓸 수 있다.
-- ```TVHEADEND_URL=http://username:password@localhost:9981```: [antennas](https://github.com/TheJF/antennas)는 tvheadend의 영상 스트림을 Plex의 DVR (녹화)에서 활용할 수 있도록 도와주는 프록시이다. tvheadend와 같은 네트워크에서 동작하므로 localhost가 맞고 그 외 username, password, port는 자신의 환경에 맞게 수정해서 사용한다. Antennas 앱이 ```ANTENNAS_URL```와 ```TUNER_COUNT``` 같은 환경 변수를 추가로 지원하니 자세한 내용은 해당 앱의 github을 참고한다.
-- ```TVH_DVB_SCANF_PATH="/usr/share/tvheadend/data/dvb-scan/"```: TVH 일반 설정 가운데 DVB 스캔 파일 경로를 컨테이너 시작할 때 지정한다. 이 경로를 기준으로 볼륨 매핑 ```-v /my/scan/folder:/usr/share/tvheadend/data/dvb-scan/atsc:ro```을 하면 ```/my/scan/folder``` 폴더에 있는 자신만의 주파수 설정 파일을 이용해서 스캔할 수 있다.
-- ```TVH_UI_LEVEL="2"```: TVH 일반 설정 가운데 보기 옵션. 전문가 수준으로.
+| 이름  | 설명  | 기본값 |
+|---|---|---|
+| ```RUN_OPTS```  | tvheadend 바이너리에 직접 전달되는 실행옵션. 대표적으로 tvheadend의 동작 포트를 바꿀때 쓸 수 있다. ```--http_port <port number> --htsp_port <port number>```   | ```null```  |
+| ```TVH_DVB_SCANF_PATH```  | TVH 일반 설정 가운데 DVB 스캔 파일 경로를 컨테이너 시작할 때 지정한다. 이 경로를 기준으로 볼륨 매핑 ```-v /my/scan/folder:/usr/share/tvheadend/data/dvb-scan/atsc:ro```을 하면 ```/my/scan/folder``` 폴더에 있는 자신만의 주파수 설정 파일을 이용해서 스캔할 수 있다.  | ```/usr/share/tvheadend/data/dvb-scan/```  |
+| ```TVH_UI_LEVEL```  | TVH 일반 설정 가운데 보기 옵션. 전문가 수준으로.  | ```2```  |
 
 
-#### 어쩌면 도움이 될지도 모르는 정보
+## 어쩌면 도움이 될지도 모르는 정보
 
-1.  컨테이너를 시작할 때마다 ```/etc/cont-init.d/```와 ```/etc/services.d/``` 안의 스크립트를 이용해서 초기화를 진행하고 프로그램을 실행한다. 무슨 일이 일어났는지 궁금하거나 생각대로 되지 않으면 로그를 확인하자.
-2.  epg2xml 동작 언어는 php이다. 성능은 python이 약간 좋지만 그 차이가 미미한 반면, docker로 deploy할 때 php가 꽤 유용한 기능을 제공한다.
+1.  컨테이너를 시작할 때마다 ```/etc/cont-init.d/``` 안의 스크립트를 이용해서 초기화를 진행하고 ```/etc/services.d/```안의 서비스를 실행한다. 무슨 일이 일어났는지 궁금하거나 생각대로 되지 않으면 로그를 확인하자.
+2.  ~~epg2xml 동작 언어는 php이다. 성능은 python이 약간 좋지만 그 차이가 미미한 반면, docker로 deploy할 때 php가 꽤 유용한 기능을 제공한다.~~ epg2xml 동작 언어는 python3로 변경되었다.
 3.  ```epg2xml.json```은 경로에 파일이 없는 경우에만 다운로드하여 설치하고 경로에 있으면 원래 것을 보존한다. 따라서 같이 업데이트하고 싶으면 파일들을 지우고 컨테이너 삭제/생성/실행하면 된다. 그것도 싫으면 그냥 수동으로 받아서 복사/붙여넣기 하면 된다.
 4.  예전에는 내부적으로 epg2xml를 실행할 때 다음의 arguments ```-i {KT/SK/LG} -d```를 썼으나 이제는 ```-i {KT/SK/LG} -o /epg2xml/xmltv.xml```로 실행한 다음 ```cat /epg2xml/xmltv.xml```로 불러온다. 중간에 파일로 저장하는 과정이 추가된 것이다.
 5.  EPG를 ```/epg2xml/xmltv.xml```에 한 번 저장하는 이유는 이 경로를 웹서버로 노출시켜 다른 앱에서도 가져다 쓰기 쉽게 하기 위함이다. php 내장 기능을 이용해 ```/epg2xml``` 폴더의 내용이 ```http://<tvheadend ip>:9983/```으로 서비스 되므로, tvheadend가 실행되면서 주기적으로 파일로 저장해 놓은 EPG 정보를 ```http://<<tvheadend ip>:9983/xmltv.xml```로 접속하여 쓸 수 있다. 원래는 Plex DVR를 위해 짜낸 기능이지만 여러모로 유용하게 사용할 수 있을 것이다.

@@ -1,8 +1,0 @@
-#!/usr/bin/with-contenv bash
-
-if [[ ! -z "${TVHEADEND_URL}" ]]; then
-	antennas_command="cd /antennas && node index.js"
-	echo "Starting Antennas..."
-	exec \
-			s6-setuidgid abc bash -c "${antennas_command}"
-fi

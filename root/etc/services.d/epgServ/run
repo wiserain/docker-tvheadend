@@ -1,4 +1,5 @@
 #!/usr/bin/with-contenv bash
 
-echo "Serving files in /epg2xml over http://0.0.0.0:${EPG_PORT}"
-exec s6-setuidgid abc php7 -S 0.0.0.0:${EPG_PORT} -t /epg2xml
+echo "Serving files in /epg2xml/xml over http://0.0.0.0:${EPG_PORT:-9983}"
+exec s6-setuidgid abc \
+    python3 -m http.server --bind=0.0.0.0 --directory=/epg2xml/xml "${EPG_PORT:-9983}" > /dev/null 2>&1

@@ -27,13 +27,13 @@ args="${args:1:${#args}}"
 urls=$(echo $args | sed "s/|/ /g")
 nurl=$(echo $urls | wc -w)
 if [ $nurl -eq 1 ]; then
-  wget -q -O /epg2xml/klive.xml "${args}"
+  wget -q -O /epg2xml/xml/klive.xml "${args}"
   if [ $? -ne 0 ]; then
     echo "ERROR: Invalid download url for xmltv"
     echo "ERROR: ${args}"
     exit 2
   else
-    cat /epg2xml/klive.xml
+    cat /epg2xml/xml/klive.xml
   fi
 
   exit 0
@@ -43,7 +43,7 @@ i=0
 gen_info=''
 for url in $urls
 do
-  xmltv_path="/epg2xml/klive-${i}.xml"
+  xmltv_path="/epg2xml/xml/klive-${i}.xml"
   wget -q -O "${xmltv_path}" "${url}"
   if [ $? -ne 0 ]; then
     # rm intermediate and log to file
@@ -57,12 +57,12 @@ done
 
 # grep <channel> and <programme> from klive-*.xml files and merge into a single file
 xml_grep --cond channel --cond programme --desc "generator-info-name=\"${gen_info}\"" \
-  --pretty_print indented --wrap tv --encoding 'UTF-8' /epg2xml/klive-*.xml > /epg2xml/klive.xml
+  --pretty_print indented --wrap tv --encoding 'UTF-8' /epg2xml/xml/klive-*.xml > /epg2xml/xml/klive.xml
 
 # remove intermediate klive-*.xml files
-rm /epg2xml/klive-*.xml
+rm /epg2xml/xml/klive-*.xml
 
 # finally cat
-cat /epg2xml/klive.xml
+cat /epg2xml/xml/klive.xml
 
 exit 0

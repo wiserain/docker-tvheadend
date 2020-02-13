@@ -4,7 +4,7 @@
 DESC="Korea (epg2xml)"
 VER="0.1"
 CAP="baseline"
-EPG2XML_SCRIPT="/epg2xml/epg2xml.php"
+EPG2XML_SCRIPT="/epg2xml/epg2xml.py"
 
 for arg
 do
@@ -26,8 +26,8 @@ if [ -z "$args" ]; then
 fi
 
 if [ -f $EPG2XML_SCRIPT ]; then
-    php7 -f $EPG2XML_SCRIPT -- $args -o /epg2xml/xmltv.xml
-    cat /epg2xml/xmltv.xml
+    python3 -u $EPG2XML_SCRIPT $args -o /epg2xml/xml/xmltv.xml
+    cat /epg2xml/xml/xmltv.xml
 fi
 
 exit 0

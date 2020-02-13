@@ -5,8 +5,8 @@ vflag=
 cflag=
 if [ $# = 0 ]
 then
-    php7 -f /epg2xml/epg2xml.php -- -i SK -o /epg2xml/xmltv.xml
-    cat /epg2xml/xmltv.xml
+    python3 -u /epg2xml/epg2xml.py -i LG -o /epg2xml/xml/xmltv.xml
+    cat /epg2xml/xml/xmltv.xml
     exit 0
 fi
 
