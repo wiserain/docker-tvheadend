@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+
+docker build \
+	--file "${DOCKERFILE_PATH}" \
+	--build-arg BUILD_DATE="$(date -u +"%Y-%m-%dT%H:%M:%SZ")" \
+	-t ${IMAGE_NAME} .
