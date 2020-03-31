@@ -23,6 +23,7 @@ RUN \
 	bzip2 \
 	cmake \
 	curl \
+	diffutils \
 	ffmpeg-dev \
 	file \
 	findutils \
@@ -36,8 +37,8 @@ RUN \
 	libcurl \
 	libdvbcsa-dev \
 	libgcrypt-dev \
-	libhdhomerun-dev \
 	libtool \
+	libva-dev \
 	libvpx-dev \
 	libxml2-dev \
 	libxslt-dev \
@@ -153,8 +154,6 @@ RUN \
  git clone https://github.com/tvheadend/tvheadend.git /tmp/tvheadend && \
  cd /tmp/tvheadend && \
  git checkout ${TVHEADEND_COMMIT} && \
- echo "**** hdhomerun signal patch ****" && \
- sed -i 's/tuner_status.signal_present/tuner_status.symbol_error_quality == 100/g' src/input/mpegts/tvhdhomerun/tvhdhomerun_frontend.c && \
  ./configure \
 	`#Encoding` \
 	--disable-ffmpeg_static \
@@ -176,7 +175,7 @@ RUN \
 	--disable-avahi \
 	--disable-dbus_1 \
 	--disable-bintray_cache \
-	--disable-hdhomerun_static \
+	--enable-hdhomerun_static \
 	--enable-hdhomerun_client \
 	--enable-libav \
 	--enable-pngquant \
@@ -247,8 +246,8 @@ RUN \
 	libcrypto1.1 \
 	libcurl \
 	libdvbcsa \
-	libhdhomerun-libs \
 	libssl1.1 \
+	libva \
 	libvpx \
 	libxml2 \
 	libxslt \
