@@ -7,7 +7,7 @@ ARG ARGTABLE_VER="2.13"
 ARG XMLTV_VER="v0.6.1"
 
 # environment settings
-ARG TZ="Europe/Oslo"
+ARG MAKEFLAGS="-j2"
 ARG TVHEADEND_COMMIT
 ENV HOME="/config"
 
@@ -139,7 +139,7 @@ RUN \
  sed "s/\(lib\/Ask\/Term.pm';\)/.\/\1/" -i Makefile.PL && \
  PERL5LIB=`pwd` && \
  echo -e "yes" | perl Makefile.PL PREFIX=/usr/ INSTALLDIRS=vendor && \
- make -j 2 && \
+ make && \
  make test && \
  make DESTDIR=/tmp/xmltv-build install
 
@@ -156,25 +156,26 @@ RUN \
  git checkout ${TVHEADEND_COMMIT} && \
  ./configure \
 	`#Encoding` \
-	--disable-ffmpeg_static \
-	--disable-libfdkaac_static \
-	--disable-libtheora_static \
-	--disable-libopus_static \
-	--disable-libvorbis_static \
-	--disable-libvpx_static \
-	--disable-libx264_static \
-	--disable-libx265_static \
-	--disable-libfdkaac \
-	--enable-libopus \
-	--enable-libvorbis \
-	--enable-libvpx \
+ 	--disable-ffmpeg_static \
 	--enable-libx264 \
+	--enable-libx264_static \
 	--enable-libx265 \
+	--enable-libx265_static \
+	--enable-libvpx \
+	--enable-libvpx_static \
+	--enable-libtheora \
+	--enable-libtheora_static \
+	--enable-libvorbis \
+	--enable-libvorbis_static \
+	--enable-libfdkaac \
+	--enable-libfdkaac_static \
+	--enable-libopus \
+	--enable-libopus_static \
 	\
 	`#Options` \
-	--disable-avahi \
-	--disable-dbus_1 \
 	--disable-bintray_cache \
+ 	--enable-bundle \
+ 	--enable-dvbcsa \
 	--enable-hdhomerun_static \
 	--enable-hdhomerun_client \
 	--enable-libav \
@@ -185,7 +186,7 @@ RUN \
 	--mandir=/usr/share/man \
 	--prefix=/usr \
 	--sysconfdir=/config && \
- make -j 2 && \
+ make && \
  make DESTDIR=/tmp/tvheadend-build install
 
 RUN \
@@ -203,7 +204,7 @@ RUN \
  cd /tmp/argtable && \
  ./configure \
 	--prefix=/usr && \
- make -j 2 && \
+ make && \
  make check && \
  make DESTDIR=/tmp/argtable-build install && \
  echo "**** copy to /usr for comskip dependency ****" && \
@@ -217,18 +218,12 @@ RUN \
  ./configure \
 	--bindir=/usr/bin \
 	--sysconfdir=/config/comskip && \
- make -j 2 && \
+ make && \
  make DESTDIR=/tmp/comskip-build install
 
 ############## runtime stage ##############
 FROM lsiobase/alpine:arm64v8-3.11
 COPY qemu-aarch64-static /usr/bin/
-
-# set version label
-ARG BUILD_DATE
-ARG VERSION
-LABEL build_version="Linuxserver.io version:- ${VERSION} Build-date:- ${BUILD_DATE}"
-LABEL maintainer="saarg"
 
 # environment settings
 ENV HOME="/config"
@@ -240,7 +235,6 @@ RUN \
 	bzip2 \
 	curl \
 	ffmpeg \
-	ffmpeg-libs \
 	gnu-libiconv \
 	gzip \
 	libcrypto1.1 \
@@ -310,7 +304,6 @@ RUN \
 	perl-xml-twig \
 	perl-xml-writer \
 	py3-requests \
-	python \
 	tar \
 	uriparser \
 	wget \

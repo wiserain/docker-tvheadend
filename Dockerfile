@@ -6,7 +6,7 @@ ARG ARGTABLE_VER="2.13"
 ARG XMLTV_VER="v0.6.1"
 
 # environment settings
-ARG TZ="Europe/Oslo"
+ARG MAKEFLAGS="-j2"
 ARG TVHEADEND_COMMIT
 ENV HOME="/config"
 
@@ -139,7 +139,7 @@ RUN \
  sed "s/\(lib\/Ask\/Term.pm';\)/.\/\1/" -i Makefile.PL && \
  PERL5LIB=`pwd` && \
  echo -e "yes" | perl Makefile.PL PREFIX=/usr/ INSTALLDIRS=vendor && \
- make -j 2 && \
+ make && \
  make test && \
  make DESTDIR=/tmp/xmltv-build install
 
@@ -159,13 +159,21 @@ RUN \
  sed -i 's/9076734d98fb8d6ad1cff8f8f68228afa0bb2204/850ca59493aa6d773a1346257c9fbee80ba6efe0/g' Makefile.ffmpeg && \
  ./configure \
 	`#Encoding` \
- 	--enable-libffmpeg_static \
-	--enable-libopus \
-	--enable-libvorbis \
-	--enable-libvpx \
+ 	--enable-ffmpeg_static \
 	--enable-libx264 \
+	--enable-libx264_static \
 	--enable-libx265 \
+	--enable-libx265_static \
+	--enable-libvpx \
+	--enable-libvpx_static \
+	--enable-libtheora \
+	--enable-libtheora_static \
+	--enable-libvorbis \
+	--enable-libvorbis_static \
 	--enable-libfdkaac \
+	--enable-libfdkaac_static \
+	--enable-libopus \
+	--enable-libopus_static \
 	\
 	`#Options` \
 	--disable-bintray_cache \
@@ -182,7 +190,7 @@ RUN \
 	--mandir=/usr/share/man \
 	--prefix=/usr \
 	--sysconfdir=/config && \
- make -j 2 && \
+ make && \
  make DESTDIR=/tmp/tvheadend-build install
 
 RUN \
@@ -200,7 +208,7 @@ RUN \
  cd /tmp/argtable && \
  ./configure \
 	--prefix=/usr && \
- make -j 2 && \
+ make && \
  make check && \
  make DESTDIR=/tmp/argtable-build install && \
  echo "**** copy to /usr for comskip dependency ****" && \
@@ -214,17 +222,11 @@ RUN \
  ./configure \
 	--bindir=/usr/bin \
 	--sysconfdir=/config/comskip && \
- make -j 2 && \
+ make && \
  make DESTDIR=/tmp/comskip-build install
 
 ############## runtime stage ##############
 FROM lsiobase/alpine:3.11
-
-# set version label
-ARG BUILD_DATE
-ARG VERSION
-LABEL build_version="Linuxserver.io version:- ${VERSION} Build-date:- ${BUILD_DATE}"
-LABEL maintainer="saarg"
 
 # environment settings
 ENV HOME="/config"
@@ -236,7 +238,6 @@ RUN \
 	bzip2 \
 	curl \
 	ffmpeg \
-	ffmpeg-libs \
 	gnu-libiconv \
 	gzip \
 	libcrypto1.1 \
