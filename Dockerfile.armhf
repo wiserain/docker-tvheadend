@@ -1,4 +1,5 @@
-FROM lsiobase/alpine:3.10 as buildstage
+FROM lsiobase/alpine:arm32v7-3.10 as buildstage
+COPY qemu-arm-static /usr/bin/
 ############## build stage ##############
 
 # package versions
@@ -148,8 +149,8 @@ RUN \
 RUN \
  echo "**** compile tvheadend ****" && \
  if [ -z ${TVHEADEND_COMMIT+x} ]; then \
-	TVHEADEND_COMMIT=$(curl -sX GET https://api.github.com/repos/tvheadend/tvheadend/commits/release/4.2 \
-	| jq -r '. | .sha'); \
+        TVHEADEND_COMMIT=$(curl -sX GET https://api.github.com/repos/tvheadend/tvheadend/commits/release/4.2 \
+        | jq -r '. | .sha'); \
  fi && \
  mkdir -p \
         /tmp/tvheadend && \
@@ -158,7 +159,7 @@ RUN \
  git checkout ${TVHEADEND_COMMIT} && \
  ./configure \
 	`#Encoding` \
- 	--enable-ffmpeg_static \
+ 	--disable-ffmpeg_static \
 	--enable-libx264 \
 	--enable-libx264_static \
 	--enable-libx265 \
@@ -176,8 +177,8 @@ RUN \
 	\
 	`#Options` \
 	--disable-bintray_cache \
-	--enable-bundle \
-	--enable-dvbcsa \
+ 	--enable-bundle \
+ 	--enable-dvbcsa \
 	--enable-hdhomerun_static \
 	--enable-hdhomerun_client \
 	--enable-libav \
@@ -224,7 +225,8 @@ RUN \
  make DESTDIR=/tmp/comskip-build install
 
 ############## runtime stage ##############
-FROM lsiobase/alpine:3.10
+FROM lsiobase/alpine:arm32v7-3.10
+COPY qemu-arm-static /usr/bin/
 
 # environment settings
 ENV HOME="/config"
