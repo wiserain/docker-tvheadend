@@ -3,10 +3,10 @@
 다음의 특징을 가지는 docker-tvheadend 이미지
 
 1.  **linuxserver/tvheadend 기반:**
-다양한 docker용 앱 이미지를 제작/배포하고 있는 [linuxserver.io](https://linuxserver.io/)의 [소스](https://github.com/linuxserver/docker-tvheadend)를 기반으로 한다. 차이점은 tvheadend 빌드 옵션 중 ```--disable-*_static```을 제거하여 좀 더 나은 transcoding이 가능하게 한다. 또한 본 이미지는 ```x86_64``` 기반이다.
+다양한 docker용 앱 이미지를 제작/배포하고 있는 [linuxserver.io](https://linuxserver.io/)의 [소스](https://github.com/linuxserver/docker-tvheadend)를 기반으로 한다. 차이점은 tvheadend 빌드 옵션을 보다 소스의 기본값에 충실하여 더 나은 실행환경을 도모한다.
 
 2.  **대한민국 IPTV를 위한 EPG grabber 탑재:**
-이 기능은 [wonipapa/epg2xml](https://github.com/wonipapa/epg2xml)과 내장 [tv_grab_file](https://github.com/nurtext/tv_grab_file_synology)을 이용하였다.
+이 기능은 [epg2xml](https://github.com/wiserain/epg2xml)과 내장 [tv_grab_file](https://github.com/nurtext/tv_grab_file_synology)을 이용하였다.
 
 ## 실행 방법
 
@@ -69,12 +69,17 @@ Socket으로 직접 밀어 넣는 external grabber와 달리 내부적으로 cro
 
 ### 이미지 태그 네이밍 규칙
 
-- **latest**: 최신 이미지 버전. [새로운 기능](https://tvheadend.org/projects/tvheadend/roadmap)을 체험할 수 있는 개발 버전으로 약간 불안정할 수 있다. 비유를 들자면 Firefox나 LineageOS의 Nightly 빌드, 아니면 iOS의 Public Beta와 유사하다.
-- **stable**: 최신 tvheadend release 버전 [참고](https://doozer.io/tvheadend/tvheadend)
-- ~~**edge**: 최신 버전의 tvheadend로 latest 태그와 유사하지만, 트랜스코딩을 위한 비디오 가속 패키지 드라이버(libva, libva-intel-driver)가 보다 최신 버전이다. 당연히 latest보다 더 불안정할 수 있다.~~
-- **ubuntu**: latest 태그와 같은 tvheadend 버전을 따르지만, alpine 대신 ubuntu를 기반으로 빌드하였다.
+```
+{arch}-{main_tag}-{tvh_ver}
+```
 
-사용 가능한 모든 이미지 버전은 [여기](https://hub.docker.com/r/wiserain/tvheadend/tags/)서 확인할 수 있는데, 마지막에 숫자로 끝나는 것은 해당 태그의 해당 tvheadend 버전을 말하며, ```-ns```는 non-static build를 의미한다. 특별한 일이 없으면 매주 한 번 새롭게 빌드 된다.
+|  | 선택 가능한 값 | 설명  |
+|---|---|---|
+| ```arch```  | ```amd64```, ```arm32v7```, ```arm64v8``` | cpu architecture |
+| ```main_tag```  | ```latest```, ```latest-ns```, ```stable```, ```stable-ns```, ```ubuntu``` | - **latest**: 최신 이미지 버전. [새로운 기능](https://tvheadend.org/projects/tvheadend/roadmap)을 체험할 수 있는 개발 버전으로 약간 불안정할 수 있다.<br> - **stable**: 최신 tvheadend release 버전 [참고](https://doozer.io/tvheadend/tvheadend)<br> - 뒤에 붙는 ```-ns```는 non-static build를 의미한다.<br> - **ubuntu**: latest 태그와 같은 tvheadend 버전을 따르지만, alpine 대신 ubuntu를 기반으로 빌드하였다. |
+| ```tvh_ver``` |  | 형식은 {tvheadend version}-{build number} 이며 생략할 경우 최신 빌드를 따름 |
+
+모든 조합이 가능하지는 않으며, 사용 가능한 이미지 버전은 [여기](https://hub.docker.com/r/wiserain/tvheadend/tags/)서 확인할 수 있다. 특별한 일이 없으면 매주 한 번 새롭게 빌드 된다.
 
 ### 네트워크 모드
 

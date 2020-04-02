@@ -1,13 +1,14 @@
 #!/usr/bin/env bash
 
-if [ "${DOCKER_TAG}" == *"stable-ns" ]; then
+if [[ "${DOCKER_TAG}" == *"stable-ns" ]]; then
 	BASE_IMAGE_FROM="linuxserver/tvheadend:release-4.2"
-elif [ "${DOCKER_TAG}" == *"latest-ns" ]; then
+elif [[ "${DOCKER_TAG}" == *"latest-ns" ]]; then
 	BASE_IMAGE_FROM="linuxserver/tvheadend:latest"
 else
 	BASE_IMAGE_FROM="wiserain/tvhbase:${DOCKER_TAG}"
 fi
 
 docker build \
+		--build-arg BUILD_DATE="$(date -u +"%Y-%m-%dT%H:%M:%SZ")" \
 		--build-arg BASE_IMAGE=${BASE_IMAGE_FROM} \
 		-t ${IMAGE_NAME} .

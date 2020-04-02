@@ -13,9 +13,9 @@ docker rm -f $CID
 add_tag $DOCKER_TAG
 add_tag $DOCKER_TAG-$BUILD
 
-if [ "${DOCKER_TAG}" == "amd64-latest" ]; then
+if [[ "${DOCKER_TAG}" == "amd64-latest" ]]; then
 	add_tag "latest"
-elif [ "${DOCKER_TAG}" == "amd64-stable" ]; then
+elif [[ "${DOCKER_TAG}" == "amd64-stable" ]]; then
 	add_tag "stable"
 fi
 
