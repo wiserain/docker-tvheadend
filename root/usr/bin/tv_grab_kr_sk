@@ -5,7 +5,7 @@ vflag=
 cflag=
 if [ $# = 0 ]
 then
-    python3 -u /epg2xml/epg2xml.py -i LG -o /epg2xml/xml/xmltv.xml
+    python3 -u /epg2xml/epg2xml.py -i SK -o /epg2xml/xml/xmltv.xml
     cat /epg2xml/xml/xmltv.xml
     exit 0
 fi
