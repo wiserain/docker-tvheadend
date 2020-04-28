@@ -60,6 +60,7 @@ jobs:
             --tag "${IMAGE_NAME}:stable" \
             --file Dockerfile .
   build-tvheadend:
+    needs: build-tvhbase
     runs-on: ubuntu-latest
     if: (github.event_name != 'watch') || (github.actor == github.event.repository.owner.login)
     steps:
