@@ -7,6 +7,7 @@ ARG XMLTV_VER="v0.6.1"
 
 # environment settings
 ARG MAKEFLAGS="-j2"
+ARG TARGETARCH
 ARG TVHEADEND_COMMIT
 ENV HOME="/config"
 
@@ -158,7 +159,7 @@ RUN \
  git checkout ${TVHEADEND_COMMIT} && \
  ./configure \
 	`#Encoding` \
- 	--enable-ffmpeg_static \
+	--$(if [ "$TARGETARCH" = "amd64" ]; then echo "en"; else echo "dis"; fi)able-ffmpeg_static \
 	--enable-libx264 \
 	--enable-libx264_static \
 	--enable-libx265 \
@@ -311,8 +312,8 @@ RUN \
  echo "**** Add Picons ****" && \
  mkdir -p /picons && \
  curl -o \
-        /picons.tar.bz2 -L \
-        https://lsio-ci.ams3.digitaloceanspaces.com/picons/picons.tar.bz2
+	/picons.tar.bz2 -L \
+	https://lsio-ci.ams3.digitaloceanspaces.com/picons/picons.tar.bz2
 
 # copy local files and buildstage artifacts
 COPY --from=buildstage /tmp/argtable-build/usr/ /usr/
