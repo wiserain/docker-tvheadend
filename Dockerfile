@@ -7,6 +7,7 @@ ARG XMLTV_VER="v0.6.1"
 
 # environment settings
 ARG MAKEFLAGS="-j2"
+ARG TARGETARCH
 ARG TVHEADEND_COMMIT
 ENV HOME="/config"
 
@@ -43,7 +44,7 @@ RUN \
 	libxslt-dev \
 	linux-headers \
 	make \
-	mesa-dri-ati \
+	$(if [ "$TARGETARCH" = "amd64" ]; then echo "mesa-dri-ati"; else echo ''; fi) \
 	openssl-dev \
 	opus-dev \
 	patch \
@@ -159,7 +160,7 @@ RUN \
  sed -i 's/9076734d98fb8d6ad1cff8f8f68228afa0bb2204/850ca59493aa6d773a1346257c9fbee80ba6efe0/g' Makefile.ffmpeg && \
  ./configure \
 	`#Encoding` \
- 	--enable-ffmpeg_static \
+	--$(if [ "$TARGETARCH" = "amd64" ]; then echo "en"; else echo "dis"; fi)able-ffmpeg_static \
 	--enable-libx264 \
 	--enable-libx264_static \
 	--enable-libx265 \
@@ -177,14 +178,14 @@ RUN \
 	\
 	`#Options` \
 	--disable-bintray_cache \
- 	--enable-bundle \
- 	--enable-dvbcsa \
+	--enable-bundle \
+	--enable-dvbcsa \
 	--enable-hdhomerun_static \
 	--enable-hdhomerun_client \
 	--enable-libav \
 	--enable-pngquant \
 	--enable-trace \
-	--enable-vaapi \
+	--$(if [ "$TARGETARCH" = "amd64" ]; then echo "en"; else echo "dis"; fi)able-vaapi \
 	--infodir=/usr/share/info \
 	--localstatedir=/var \
 	--mandir=/usr/share/man \
@@ -245,7 +246,7 @@ RUN \
 	libdvbcsa \
 	libssl1.1 \
 	libva \
-	libva-intel-driver \
+	$(if [ "$TARGETARCH" = "amd64" ]; then echo "libva-intel-driver"; else echo ''; fi) \
 	libvpx \
 	libxml2 \
 	libxslt \
@@ -317,8 +318,8 @@ RUN \
  echo "**** Add Picons ****" && \
  mkdir -p /picons && \
  curl -o \
-        /picons.tar.bz2 -L \
-        https://lsio-ci.ams3.digitaloceanspaces.com/picons/picons.tar.bz2
+	/picons.tar.bz2 -L \
+	https://lsio-ci.ams3.digitaloceanspaces.com/picons/picons.tar.bz2
 
 # copy local files and buildstage artifacts
 COPY --from=buildstage /tmp/argtable-build/usr/ /usr/
