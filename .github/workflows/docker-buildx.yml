@@ -1,0 +1,158 @@
+name: docker-buildx
+
+on:
+  watch:
+    types: [started]
+  schedule:
+    - cron: "0 21 * * 5"
+
+jobs:
+  build-tvhbase:
+    runs-on: ubuntu-latest
+    if: (github.event_name != 'watch') || (github.actor == github.event.repository.owner.login)
+    steps:
+      - 
+        name: Load Variables
+        id: vars
+        run: |
+          echo ::set-output name=buildx_platforms::linux/amd64,linux/arm/v7,linux/arm64
+          echo ::set-output name=dockerhub_user::wiserain
+          echo ::set-output name=dockerhub_repo::tvhbase
+      - 
+        name: Dockerhub Login
+        env:
+          DOCKERHUB_PASS: ${{ secrets.DOCKERHUB_PASS }}
+        run: |
+          echo "${DOCKERHUB_PASS}" | docker login --username "${{ steps.vars.outputs.dockerhub_user }}" --password-stdin
+      -
+        name: Setup Buildx
+        uses: crazy-max/ghaction-docker-buildx@v1
+        with:
+          version: latest
+      -
+        name: Checkout latest
+        uses: actions/checkout@v2
+        with:
+          ref: 'latest'
+      - 
+        name: Buildx latest
+        env:
+          IMAGE_NAME: ${{ steps.vars.outputs.dockerhub_user }}/${{ steps.vars.outputs.dockerhub_repo }}
+        run: |
+          docker buildx build \
+            --output "type=image,push=true" \
+            --platform ${{ steps.vars.outputs.buildx_platforms }} \
+            --tag "${IMAGE_NAME}:latest" \
+            --file Dockerfile .
+      -
+        name: Checkout stable
+        uses: actions/checkout@v2
+        with:
+          ref: 'stable'
+      - 
+        name: Buildx stable
+        env:
+          IMAGE_NAME: ${{ steps.vars.outputs.dockerhub_user }}/${{ steps.vars.outputs.dockerhub_repo }}
+        run: |
+          docker buildx build \
+            --output "type=image,push=true" \
+            --platform ${{ steps.vars.outputs.buildx_platforms }} \
+            --tag "${IMAGE_NAME}:stable" \
+            --file Dockerfile .
+  build-tvheadend:
+    runs-on: ubuntu-latest
+    if: (github.event_name != 'watch') || (github.actor == github.event.repository.owner.login)
+    steps:
+      - 
+        name: Load Variables
+        id: vars
+        run: |
+          echo ::set-output name=buildx_platforms::linux/amd64,linux/arm/v7,linux/arm64
+          echo ::set-output name=dockerhub_user::wiserain
+          echo ::set-output name=dockerhub_repo::tvheadend
+      - 
+        name: Dockerhub Login
+        env:
+          DOCKERHUB_PASS: ${{ secrets.DOCKERHUB_PASS }}
+        run: |
+          echo "${DOCKERHUB_PASS}" | docker login --username "${{ steps.vars.outputs.dockerhub_user }}" --password-stdin
+      -
+        name: Setup Buildx
+        uses: crazy-max/ghaction-docker-buildx@v1
+        with:
+          version: latest
+      -
+        name: Checkout
+        uses: actions/checkout@v2
+      - 
+        name: Buildx latest
+        env:
+          IMAGE_NAME: ${{ steps.vars.outputs.dockerhub_user }}/${{ steps.vars.outputs.dockerhub_repo }}
+          IMAGE_FROM: wiserain/tvhbase:latest
+          IMAGE_TAG: latest
+        run: |
+          CID=$(docker run -d $IMAGE_FROM)
+          BUILD=$(docker exec $CID tvheadend -v | awk -F'[_ ]' '{print $NF}' | awk -F'[_~]' '{print $1}')
+          docker rm -f $CID
+          docker buildx build \
+            --output "type=image,push=true" \
+            --platform ${{ steps.vars.outputs.buildx_platforms }} \
+            --tag "${IMAGE_NAME}:${IMAGE_TAG}" \
+            --tag "${IMAGE_NAME}:${IMAGE_TAG}-${BUILD}" \
+            --file Dockerfile . \
+            --build-arg BUILD_DATE="$(date -u +"%Y-%m-%dT%H:%M:%SZ")" \
+            --build-arg BASE_IMAGE=${IMAGE_FROM}
+      - 
+        name: Buildx stable
+        env:
+          IMAGE_NAME: ${{ steps.vars.outputs.dockerhub_user }}/${{ steps.vars.outputs.dockerhub_repo }}
+          IMAGE_FROM: wiserain/tvhbase:stable
+          IMAGE_TAG: stable
+        run: |
+          CID=$(docker run -d $IMAGE_FROM)
+          BUILD=$(docker exec $CID tvheadend -v | awk -F'[_ ]' '{print $NF}' | awk -F'[_~]' '{print $1}')
+          docker rm -f $CID
+          docker buildx build \
+            --output "type=image,push=true" \
+            --platform ${{ steps.vars.outputs.buildx_platforms }} \
+            --tag "${IMAGE_NAME}:${IMAGE_TAG}" \
+            --tag "${IMAGE_NAME}:${IMAGE_TAG}-${BUILD}" \
+            --file Dockerfile . \
+            --build-arg BUILD_DATE="$(date -u +"%Y-%m-%dT%H:%M:%SZ")" \
+            --build-arg BASE_IMAGE=${IMAGE_FROM}
+      - 
+        name: Buildx latest-ns
+        env:
+          IMAGE_NAME: ${{ steps.vars.outputs.dockerhub_user }}/${{ steps.vars.outputs.dockerhub_repo }}
+          IMAGE_FROM: linuxserver/tvheadend:latest
+          IMAGE_TAG: latest-ns
+        run: |
+          CID=$(docker run -d $IMAGE_FROM)
+          BUILD=$(docker exec $CID tvheadend -v | awk -F'[_ ]' '{print $NF}' | awk -F'[_~]' '{print $1}')
+          docker rm -f $CID
+          docker buildx build \
+            --output "type=image,push=true" \
+            --platform ${{ steps.vars.outputs.buildx_platforms }} \
+            --tag "${IMAGE_NAME}:${IMAGE_TAG}" \
+            --tag "${IMAGE_NAME}:${IMAGE_TAG}-${BUILD}" \
+            --file Dockerfile . \
+            --build-arg BUILD_DATE="$(date -u +"%Y-%m-%dT%H:%M:%SZ")" \
+            --build-arg BASE_IMAGE=${IMAGE_FROM}
+      - 
+        name: Buildx stable-ns
+        env:
+          IMAGE_NAME: ${{ steps.vars.outputs.dockerhub_user }}/${{ steps.vars.outputs.dockerhub_repo }}
+          IMAGE_FROM: linuxserver/tvheadend:release-4.2
+          IMAGE_TAG: stable-ns
+        run: |
+          CID=$(docker run -d $IMAGE_FROM)
+          BUILD=$(docker exec $CID tvheadend -v | awk -F'[_ ]' '{print $NF}' | awk -F'[_~]' '{print $1}')
+          docker rm -f $CID
+          docker buildx build \
+            --output "type=image,push=true" \
+            --platform ${{ steps.vars.outputs.buildx_platforms }} \
+            --tag "${IMAGE_NAME}:${IMAGE_TAG}" \
+            --tag "${IMAGE_NAME}:${IMAGE_TAG}-${BUILD}" \
+            --file Dockerfile . \
+            --build-arg BUILD_DATE="$(date -u +"%Y-%m-%dT%H:%M:%SZ")" \
+            --build-arg BASE_IMAGE=${IMAGE_FROM}

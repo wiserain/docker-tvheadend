@@ -70,12 +70,11 @@ Socket으로 직접 밀어 넣는 external grabber와 달리 내부적으로 cro
 ### 이미지 태그 네이밍 규칙
 
 ```
-{arch}-{main_tag}-{tvh_ver}
+{main_tag}-{tvh_ver}
 ```
 
 |  | 선택 가능한 값 | 설명  |
 |---|---|---|
-| ```arch```  | ```amd64```, ```arm32v7```, ```arm64v8``` | cpu architecture |
 | ```main_tag```  | ```latest```, ```latest-ns```, ```stable```, ```stable-ns```, ```ubuntu``` | - **latest**: 최신 이미지 버전. [새로운 기능](https://tvheadend.org/projects/tvheadend/roadmap)을 체험할 수 있는 개발 버전으로 약간 불안정할 수 있다.<br> - **stable**: 최신 tvheadend release 버전 [참고](https://doozer.io/tvheadend/tvheadend)<br> - 뒤에 붙는 ```-ns```는 non-static build를 의미한다.<br> - **ubuntu**: latest 태그와 같은 tvheadend 버전을 따르지만, alpine 대신 ubuntu를 기반으로 빌드하였다. |
 | ```tvh_ver``` |  | 형식은 {tvheadend version}-{build number} 이며 생략할 경우 최신 빌드를 따름 |
 
