@@ -34,6 +34,7 @@ jobs:
         uses: actions/checkout@v2
         with:
           ref: 'latest'
+          token: ${{ secrets.PAT }}
       - 
         name: Buildx latest
         env:
@@ -49,6 +50,7 @@ jobs:
         uses: actions/checkout@v2
         with:
           ref: 'stable'
+          token: ${{ secrets.PAT }}
       - 
         name: Buildx stable
         env:
@@ -85,6 +87,8 @@ jobs:
       -
         name: Checkout
         uses: actions/checkout@v2
+        with:
+          token: ${{ secrets.PAT }}
       - 
         name: Buildx latest
         env:
