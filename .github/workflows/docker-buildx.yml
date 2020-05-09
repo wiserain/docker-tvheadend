@@ -380,7 +380,7 @@ jobs:
           docker buildx build \
             --output "type=image,push=true" \
             --platform ${{ steps.vars.outputs.buildx_platforms }} \
-            --tag "${IMAGE_NAME}:${{ steps.vars.outputs.image_tag }}"
+            --tag "${IMAGE_NAME}:${{ steps.vars.outputs.image_tag }}" \
             --file Dockerfile .
       -
         name: Send Notification
