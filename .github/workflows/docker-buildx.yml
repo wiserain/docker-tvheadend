@@ -28,7 +28,8 @@ jobs:
         name: Setup Buildx
         uses: crazy-max/ghaction-docker-buildx@v1
         with:
-          version: latest
+          buildx-version: latest
+          qemu-version: latest
       -
         name: Checkout
         uses: actions/checkout@v2
@@ -77,7 +78,8 @@ jobs:
         name: Setup Buildx
         uses: crazy-max/ghaction-docker-buildx@v1
         with:
-          version: latest
+          buildx-version: latest
+          qemu-version: latest
       -
         name: Checkout
         uses: actions/checkout@v2
@@ -104,6 +106,56 @@ jobs:
           description: |
             Image: ${{ steps.vars.outputs.dockerhub_user }}/${{ steps.vars.outputs.dockerhub_repo }}
             Tags: stable
+
+  build-tvhbase-ubuntu:
+    runs-on: ubuntu-latest
+    if: (github.event_name != 'watch') || (github.actor == github.event.repository.owner.login)
+    steps:
+      - 
+        name: Load Variables
+        id: vars
+        run: |
+          echo ::set-output name=buildx_platforms::linux/amd64
+          echo ::set-output name=dockerhub_user::wiserain
+          echo ::set-output name=dockerhub_repo::tvhbase
+      - 
+        name: Dockerhub Login
+        env:
+          DOCKERHUB_PASS: ${{ secrets.DOCKERHUB_PASS }}
+        run: |
+          echo "${DOCKERHUB_PASS}" | docker login --username "${{ steps.vars.outputs.dockerhub_user }}" --password-stdin
+      -
+        name: Setup Buildx
+        uses: crazy-max/ghaction-docker-buildx@v1
+        with:
+          buildx-version: latest
+          qemu-version: latest
+      -
+        name: Checkout
+        uses: actions/checkout@v2
+        with:
+          ref: 'latest'
+          token: ${{ secrets.PAT }}
+      - 
+        name: Run Buildx
+        env:
+          IMAGE_NAME: ${{ steps.vars.outputs.dockerhub_user }}/${{ steps.vars.outputs.dockerhub_repo }}
+        run: |
+          docker buildx build \
+            --output "type=image,push=true" \
+            --platform ${{ steps.vars.outputs.buildx_platforms }} \
+            --tag "${IMAGE_NAME}:ubuntu" \
+            --file Dockerfile.ubuntu .
+      -
+        name: Send Notification
+        uses: sarisia/actions-status-discord@v1
+        if: always()
+        with:
+          webhook: ${{ secrets.DISCORD_WEBHOOK }}
+          status: ${{ job.status }}
+          description: |
+            Image: ${{ steps.vars.outputs.dockerhub_user }}/${{ steps.vars.outputs.dockerhub_repo }}
+            Tags: ubuntu
 
   build-tvheadend-latest:
     needs: build-tvhbase-latest
@@ -135,7 +187,8 @@ jobs:
         name: Setup Buildx
         uses: crazy-max/ghaction-docker-buildx@v1
         with:
-          version: latest
+          buildx-version: latest
+          qemu-version: latest
       -
         name: Checkout
         uses: actions/checkout@v2
@@ -195,7 +248,8 @@ jobs:
         name: Setup Buildx
         uses: crazy-max/ghaction-docker-buildx@v1
         with:
-          version: latest
+          buildx-version: latest
+          qemu-version: latest
       -
         name: Checkout
         uses: actions/checkout@v2
@@ -212,6 +266,67 @@ jobs:
             --tag "${IMAGE_NAME}:${{ steps.vars.outputs.image_tag }}" \
             --tag "${IMAGE_NAME}:${{ steps.vars.outputs.image_tag }}-${{ steps.vars.outputs.tvh_build }}" \
             --file Dockerfile . \
+            --build-arg BUILD_DATE="$(date -u +"%Y-%m-%dT%H:%M:%SZ")" \
+            --build-arg BASE_IMAGE=${{ steps.vars.outputs.image_from }}
+      -
+        name: Send Notification
+        uses: sarisia/actions-status-discord@v1
+        if: always()
+        with:
+          webhook: ${{ secrets.DISCORD_WEBHOOK }}
+          status: ${{ job.status }}
+          description: |
+            Image: ${{ steps.vars.outputs.dockerhub_user }}/${{ steps.vars.outputs.dockerhub_repo }}
+            Tags: ${{ steps.vars.outputs.image_tag }}, ${{ steps.vars.outputs.image_tag }}-${{ steps.vars.outputs.tvh_build }}
+
+  build-tvheadend-ubuntu:
+    needs: build-tvhbase-ubuntu
+    runs-on: ubuntu-latest
+    if: (github.event_name != 'watch') || (github.actor == github.event.repository.owner.login)
+    steps:
+      - 
+        name: Load Variables
+        id: vars
+        env:
+          IMAGE_FROM: wiserain/tvhbase:ubuntu
+        run: |
+          echo ::set-output name=buildx_platforms::linux/amd64
+          echo ::set-output name=dockerhub_user::wiserain
+          echo ::set-output name=dockerhub_repo::tvheadend
+          echo ::set-output name=image_tag::ubuntu
+          echo ::set-output name=image_from::${IMAGE_FROM}
+          CID=$(docker run -d $IMAGE_FROM)
+          BUILD=$(docker exec $CID tvheadend -v | awk -F'[_ ]' '{print $NF}' | awk -F'[_~]' '{print $1}')
+          docker rm -f $CID
+          echo ::set-output name=tvh_build::${BUILD}
+      - 
+        name: Dockerhub Login
+        env:
+          DOCKERHUB_PASS: ${{ secrets.DOCKERHUB_PASS }}
+        run: |
+          echo "${DOCKERHUB_PASS}" | docker login --username "${{ steps.vars.outputs.dockerhub_user }}" --password-stdin
+      -
+        name: Setup Buildx
+        uses: crazy-max/ghaction-docker-buildx@v1
+        with:
+          buildx-version: latest
+          qemu-version: latest
+      -
+        name: Checkout
+        uses: actions/checkout@v2
+        with:
+          token: ${{ secrets.PAT }}
+      - 
+        name: Run Buildx
+        env:
+          IMAGE_NAME: ${{ steps.vars.outputs.dockerhub_user }}/${{ steps.vars.outputs.dockerhub_repo }}
+        run: |
+          docker buildx build \
+            --output "type=image,push=true" \
+            --platform ${{ steps.vars.outputs.buildx_platforms }} \
+            --tag "${IMAGE_NAME}:${{ steps.vars.outputs.image_tag }}" \
+            --tag "${IMAGE_NAME}:${{ steps.vars.outputs.image_tag }}-${{ steps.vars.outputs.tvh_build }}" \
+            --file Dockerfile.ubuntu . \
             --build-arg BUILD_DATE="$(date -u +"%Y-%m-%dT%H:%M:%SZ")" \
             --build-arg BASE_IMAGE=${{ steps.vars.outputs.image_from }}
       -
@@ -254,7 +369,8 @@ jobs:
         name: Setup Buildx
         uses: crazy-max/ghaction-docker-buildx@v1
         with:
-          version: latest
+          buildx-version: latest
+          qemu-version: latest
       -
         name: Checkout
         uses: actions/checkout@v2
@@ -313,7 +429,8 @@ jobs:
         name: Setup Buildx
         uses: crazy-max/ghaction-docker-buildx@v1
         with:
-          version: latest
+          buildx-version: latest
+          qemu-version: latest
       -
         name: Checkout
         uses: actions/checkout@v2
@@ -342,53 +459,3 @@ jobs:
           description: |
             Image: ${{ steps.vars.outputs.dockerhub_user }}/${{ steps.vars.outputs.dockerhub_repo }}
             Tags: ${{ steps.vars.outputs.image_tag }}, ${{ steps.vars.outputs.image_tag }}-${{ steps.vars.outputs.tvh_build }}
-
-  build-tvheadend-ubuntu:
-    runs-on: ubuntu-latest
-    if: (github.event_name != 'watch') || (github.actor == github.event.repository.owner.login)
-    steps:
-      - 
-        name: Load Variables
-        id: vars
-        run: |
-          echo ::set-output name=buildx_platforms::linux/amd64,linux/arm/v7,linux/arm64
-          echo ::set-output name=dockerhub_user::wiserain
-          echo ::set-output name=dockerhub_repo::tvheadend
-          echo ::set-output name=image_tag::ubuntu
-      - 
-        name: Dockerhub Login
-        env:
-          DOCKERHUB_PASS: ${{ secrets.DOCKERHUB_PASS }}
-        run: |
-          echo "${DOCKERHUB_PASS}" | docker login --username "${{ steps.vars.outputs.dockerhub_user }}" --password-stdin
-      -
-        name: Setup Buildx
-        uses: crazy-max/ghaction-docker-buildx@v1
-        with:
-          version: latest
-      -
-        name: Checkout
-        uses: actions/checkout@v2
-        with:
-          ref: 'ubuntu'
-          token: ${{ secrets.PAT }}
-      - 
-        name: Run Buildx
-        env:
-          IMAGE_NAME: ${{ steps.vars.outputs.dockerhub_user }}/${{ steps.vars.outputs.dockerhub_repo }}
-        run: |
-          docker buildx build \
-            --output "type=image,push=true" \
-            --platform ${{ steps.vars.outputs.buildx_platforms }} \
-            --tag "${IMAGE_NAME}:${{ steps.vars.outputs.image_tag }}" \
-            --file Dockerfile .
-      -
-        name: Send Notification
-        uses: sarisia/actions-status-discord@v1
-        if: always()
-        with:
-          webhook: ${{ secrets.DISCORD_WEBHOOK }}
-          status: ${{ job.status }}
-          description: |
-            Image: ${{ steps.vars.outputs.dockerhub_user }}/${{ steps.vars.outputs.dockerhub_repo }}
-            Tags: ${{ steps.vars.outputs.image_tag }}

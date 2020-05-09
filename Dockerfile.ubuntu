@@ -1,0 +1,42 @@
+# package version
+ARG BASE_IMAGE
+ARG BUILD_DATE
+FROM $BASE_IMAGE
+LABEL maintainer="wiserain"
+LABEL build_date="${BUILD_DATE}"
+
+ARG DEBIAN_FRONTEND="noninteractive"
+
+# default variables
+ENV UPDATE_EPG2XML="1"
+ENV UPDATE_CHANNEL="1"
+ENV TZ="Asia/Seoul"
+
+# copy local files
+COPY root/ /
+
+RUN \
+	echo "**** set permissions for scripts /usr/bin ****" && \
+	chmod 555 /usr/bin/tv_grab_* && \
+	echo "**** remove irrelevant grabbers ****" && \
+	xargs rm -f < /tmp/tv_grab_irr.list && \
+	echo "install dependencies for epg2xml" && \
+	chmod 777 /tmp && \
+	apt-get update -yq && \
+	apt-get install -yq \
+		git \
+		jq \
+		python3 \
+		python3-bs4 \
+		python3-lxml \
+		python3-requests \
+		xml-twig-tools && \
+	echo "**** cleanup ****" && \
+	apt-get clean autoclean && \
+	apt-get autoremove -y && \
+	rm -rf /tmp/* /var/lib/{apt,dpkg,cache,log}/
+
+# ports and volumes
+EXPOSE 9981 9982 9983
+VOLUME /config /epg2xml
+WORKDIR /epg2xml
