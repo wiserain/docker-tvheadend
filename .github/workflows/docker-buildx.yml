@@ -156,7 +156,7 @@ jobs:
           tag: ${{ steps.vars.outputs.image_tag }},${{ steps.vars.outputs.image_tag }}-${{ steps.vars.outputs.tvh_build }}
           imageName: ${{ steps.vars.outputs.dockerhub_user }}/${{ steps.vars.outputs.dockerhub_repo }}
           dockerFile: Dockerfile
-          buildArg: BUILD_DATE="$(date -u +"%Y-%m-%dT%H:%M:%SZ")",BASE_IMAGE=${{ steps.vars.outputs.image_from }}
+          buildArg: BASE_IMAGE=${{ steps.vars.outputs.image_from }}
           publish: true
           platform: ${{ steps.vars.outputs.buildx_platforms }}
           dockerHubUser: ${{ steps.vars.outputs.dockerhub_user }}
@@ -192,6 +192,11 @@ jobs:
           BUILD=$(docker exec $CID tvheadend -v | awk -F'[_ ]' '{print $NF}' | awk -F'[_~]' '{print $1}')
           docker rm -f $CID
           echo ::set-output name=tvh_build::${BUILD}
+      -
+        name: Checkout
+        uses: actions/checkout@v2
+        with:
+          token: ${{ secrets.PAT }}
       - 
         name: Run Buildx
         uses: ilteoood/docker_buildx@master
@@ -199,7 +204,7 @@ jobs:
           tag: ${{ steps.vars.outputs.image_tag }},${{ steps.vars.outputs.image_tag }}-${{ steps.vars.outputs.tvh_build }}
           imageName: ${{ steps.vars.outputs.dockerhub_user }}/${{ steps.vars.outputs.dockerhub_repo }}
           dockerFile: Dockerfile
-          buildArg: BUILD_DATE="$(date -u +"%Y-%m-%dT%H:%M:%SZ")",BASE_IMAGE=${{ steps.vars.outputs.image_from }}
+          buildArg: BASE_IMAGE=${{ steps.vars.outputs.image_from }}
           publish: true
           platform: ${{ steps.vars.outputs.buildx_platforms }}
           dockerHubUser: ${{ steps.vars.outputs.dockerhub_user }}
@@ -247,7 +252,7 @@ jobs:
           tag: ${{ steps.vars.outputs.image_tag }},${{ steps.vars.outputs.image_tag }}-${{ steps.vars.outputs.tvh_build }}
           imageName: ${{ steps.vars.outputs.dockerhub_user }}/${{ steps.vars.outputs.dockerhub_repo }}
           dockerFile: Dockerfile.ubuntu
-          buildArg: BUILD_DATE="$(date -u +"%Y-%m-%dT%H:%M:%SZ")",BASE_IMAGE=${{ steps.vars.outputs.image_from }}
+          buildArg: BASE_IMAGE=${{ steps.vars.outputs.image_from }}
           publish: true
           platform: ${{ steps.vars.outputs.buildx_platforms }}
           dockerHubUser: ${{ steps.vars.outputs.dockerhub_user }}
@@ -294,7 +299,7 @@ jobs:
           tag: ${{ steps.vars.outputs.image_tag }},${{ steps.vars.outputs.image_tag }}-${{ steps.vars.outputs.tvh_build }}
           imageName: ${{ steps.vars.outputs.dockerhub_user }}/${{ steps.vars.outputs.dockerhub_repo }}
           dockerFile: Dockerfile
-          buildArg: BUILD_DATE="$(date -u +"%Y-%m-%dT%H:%M:%SZ")",BASE_IMAGE=${{ steps.vars.outputs.image_from }}
+          buildArg: BASE_IMAGE=${{ steps.vars.outputs.image_from }}
           publish: true
           platform: ${{ steps.vars.outputs.buildx_platforms }}
           dockerHubUser: ${{ steps.vars.outputs.dockerhub_user }}
@@ -341,7 +346,7 @@ jobs:
           tag: ${{ steps.vars.outputs.image_tag }},${{ steps.vars.outputs.image_tag }}-${{ steps.vars.outputs.tvh_build }}
           imageName: ${{ steps.vars.outputs.dockerhub_user }}/${{ steps.vars.outputs.dockerhub_repo }}
           dockerFile: Dockerfile
-          buildArg: BUILD_DATE="$(date -u +"%Y-%m-%dT%H:%M:%SZ")",BASE_IMAGE=${{ steps.vars.outputs.image_from }}
+          buildArg: BASE_IMAGE=${{ steps.vars.outputs.image_from }}
           publish: true
           platform: ${{ steps.vars.outputs.buildx_platforms }}
           dockerHubUser: ${{ steps.vars.outputs.dockerhub_user }}

@@ -1,9 +1,7 @@
 # package version
 ARG BASE_IMAGE
-ARG BUILD_DATE
 FROM $BASE_IMAGE
 LABEL maintainer="wiserain"
-LABEL build_date="${BUILD_DATE}"
 
 # default variables
 ENV UPDATE_EPG2XML="1"
