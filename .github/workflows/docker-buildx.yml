@@ -18,18 +18,6 @@ jobs:
           echo ::set-output name=buildx_platforms::linux/amd64,linux/arm/v7,linux/arm64
           echo ::set-output name=dockerhub_user::wiserain
           echo ::set-output name=dockerhub_repo::tvhbase
-      - 
-        name: Dockerhub Login
-        env:
-          DOCKERHUB_PASS: ${{ secrets.DOCKERHUB_PASS }}
-        run: |
-          echo "${DOCKERHUB_PASS}" | docker login --username "${{ steps.vars.outputs.dockerhub_user }}" --password-stdin
-      -
-        name: Setup Buildx
-        uses: crazy-max/ghaction-docker-buildx@v1
-        with:
-          buildx-version: latest
-          qemu-version: latest
       -
         name: Checkout
         uses: actions/checkout@v2
@@ -38,14 +26,15 @@ jobs:
           token: ${{ secrets.PAT }}
       - 
         name: Run Buildx
-        env:
-          IMAGE_NAME: ${{ steps.vars.outputs.dockerhub_user }}/${{ steps.vars.outputs.dockerhub_repo }}
-        run: |
-          docker buildx build \
-            --output "type=image,push=true" \
-            --platform ${{ steps.vars.outputs.buildx_platforms }} \
-            --tag "${IMAGE_NAME}:latest" \
-            --file Dockerfile .
+        uses: ilteoood/docker_buildx@master
+        with:
+          tag: latest
+          imageName: ${{ steps.vars.outputs.dockerhub_user }}/${{ steps.vars.outputs.dockerhub_repo }}
+          dockerFile: Dockerfile
+          publish: true
+          platform: ${{ steps.vars.outputs.buildx_platforms }}
+          dockerHubUser: ${{ steps.vars.outputs.dockerhub_user }}
+          dockerHubPassword: ${{ secrets.DOCKERHUB_PASS }}
       -
         name: Send Notification
         uses: sarisia/actions-status-discord@v1
@@ -68,18 +57,6 @@ jobs:
           echo ::set-output name=buildx_platforms::linux/amd64,linux/arm/v7,linux/arm64
           echo ::set-output name=dockerhub_user::wiserain
           echo ::set-output name=dockerhub_repo::tvhbase
-      - 
-        name: Dockerhub Login
-        env:
-          DOCKERHUB_PASS: ${{ secrets.DOCKERHUB_PASS }}
-        run: |
-          echo "${DOCKERHUB_PASS}" | docker login --username "${{ steps.vars.outputs.dockerhub_user }}" --password-stdin
-      -
-        name: Setup Buildx
-        uses: crazy-max/ghaction-docker-buildx@v1
-        with:
-          buildx-version: latest
-          qemu-version: latest
       -
         name: Checkout
         uses: actions/checkout@v2
@@ -88,14 +65,15 @@ jobs:
           token: ${{ secrets.PAT }}
       - 
         name: Run Buildx
-        env:
-          IMAGE_NAME: ${{ steps.vars.outputs.dockerhub_user }}/${{ steps.vars.outputs.dockerhub_repo }}
-        run: |
-          docker buildx build \
-            --output "type=image,push=true" \
-            --platform ${{ steps.vars.outputs.buildx_platforms }} \
-            --tag "${IMAGE_NAME}:stable" \
-            --file Dockerfile .
+        uses: ilteoood/docker_buildx@master
+        with:
+          tag: stable
+          imageName: ${{ steps.vars.outputs.dockerhub_user }}/${{ steps.vars.outputs.dockerhub_repo }}
+          dockerFile: Dockerfile
+          publish: true
+          platform: ${{ steps.vars.outputs.buildx_platforms }}
+          dockerHubUser: ${{ steps.vars.outputs.dockerhub_user }}
+          dockerHubPassword: ${{ secrets.DOCKERHUB_PASS }}
       -
         name: Send Notification
         uses: sarisia/actions-status-discord@v1
@@ -118,18 +96,6 @@ jobs:
           echo ::set-output name=buildx_platforms::linux/amd64
           echo ::set-output name=dockerhub_user::wiserain
           echo ::set-output name=dockerhub_repo::tvhbase
-      - 
-        name: Dockerhub Login
-        env:
-          DOCKERHUB_PASS: ${{ secrets.DOCKERHUB_PASS }}
-        run: |
-          echo "${DOCKERHUB_PASS}" | docker login --username "${{ steps.vars.outputs.dockerhub_user }}" --password-stdin
-      -
-        name: Setup Buildx
-        uses: crazy-max/ghaction-docker-buildx@v1
-        with:
-          buildx-version: latest
-          qemu-version: latest
       -
         name: Checkout
         uses: actions/checkout@v2
@@ -138,14 +104,15 @@ jobs:
           token: ${{ secrets.PAT }}
       - 
         name: Run Buildx
-        env:
-          IMAGE_NAME: ${{ steps.vars.outputs.dockerhub_user }}/${{ steps.vars.outputs.dockerhub_repo }}
-        run: |
-          docker buildx build \
-            --output "type=image,push=true" \
-            --platform ${{ steps.vars.outputs.buildx_platforms }} \
-            --tag "${IMAGE_NAME}:ubuntu" \
-            --file Dockerfile.ubuntu .
+        uses: ilteoood/docker_buildx@master
+        with:
+          tag: ubuntu
+          imageName: ${{ steps.vars.outputs.dockerhub_user }}/${{ steps.vars.outputs.dockerhub_repo }}
+          dockerFile: Dockerfile.ubuntu
+          publish: true
+          platform: ${{ steps.vars.outputs.buildx_platforms }}
+          dockerHubUser: ${{ steps.vars.outputs.dockerhub_user }}
+          dockerHubPassword: ${{ secrets.DOCKERHUB_PASS }}
       -
         name: Send Notification
         uses: sarisia/actions-status-discord@v1
@@ -177,18 +144,6 @@ jobs:
           BUILD=$(docker exec $CID tvheadend -v | awk -F'[_ ]' '{print $NF}' | awk -F'[_~]' '{print $1}')
           docker rm -f $CID
           echo ::set-output name=tvh_build::${BUILD}
-      - 
-        name: Dockerhub Login
-        env:
-          DOCKERHUB_PASS: ${{ secrets.DOCKERHUB_PASS }}
-        run: |
-          echo "${DOCKERHUB_PASS}" | docker login --username "${{ steps.vars.outputs.dockerhub_user }}" --password-stdin
-      -
-        name: Setup Buildx
-        uses: crazy-max/ghaction-docker-buildx@v1
-        with:
-          buildx-version: latest
-          qemu-version: latest
       -
         name: Checkout
         uses: actions/checkout@v2
@@ -196,17 +151,16 @@ jobs:
           token: ${{ secrets.PAT }}
       - 
         name: Run Buildx
-        env:
-          IMAGE_NAME: ${{ steps.vars.outputs.dockerhub_user }}/${{ steps.vars.outputs.dockerhub_repo }}
-        run: |
-          docker buildx build \
-            --output "type=image,push=true" \
-            --platform ${{ steps.vars.outputs.buildx_platforms }} \
-            --tag "${IMAGE_NAME}:${{ steps.vars.outputs.image_tag }}" \
-            --tag "${IMAGE_NAME}:${{ steps.vars.outputs.image_tag }}-${{ steps.vars.outputs.tvh_build }}" \
-            --file Dockerfile . \
-            --build-arg BUILD_DATE="$(date -u +"%Y-%m-%dT%H:%M:%SZ")" \
-            --build-arg BASE_IMAGE=${{ steps.vars.outputs.image_from }}
+        uses: ilteoood/docker_buildx@master
+        with:
+          tag: ${{ steps.vars.outputs.image_tag }},${{ steps.vars.outputs.image_tag }}-${{ steps.vars.outputs.tvh_build }}
+          imageName: ${{ steps.vars.outputs.dockerhub_user }}/${{ steps.vars.outputs.dockerhub_repo }}
+          dockerFile: Dockerfile
+          buildArg: BUILD_DATE="$(date -u +"%Y-%m-%dT%H:%M:%SZ")",BASE_IMAGE=${{ steps.vars.outputs.image_from }}
+          publish: true
+          platform: ${{ steps.vars.outputs.buildx_platforms }}
+          dockerHubUser: ${{ steps.vars.outputs.dockerhub_user }}
+          dockerHubPassword: ${{ secrets.DOCKERHUB_PASS }}
       -
         name: Send Notification
         uses: sarisia/actions-status-discord@v1
@@ -239,35 +193,17 @@ jobs:
           docker rm -f $CID
           echo ::set-output name=tvh_build::${BUILD}
       - 
-        name: Dockerhub Login
-        env:
-          DOCKERHUB_PASS: ${{ secrets.DOCKERHUB_PASS }}
-        run: |
-          echo "${DOCKERHUB_PASS}" | docker login --username "${{ steps.vars.outputs.dockerhub_user }}" --password-stdin
-      -
-        name: Setup Buildx
-        uses: crazy-max/ghaction-docker-buildx@v1
-        with:
-          buildx-version: latest
-          qemu-version: latest
-      -
-        name: Checkout
-        uses: actions/checkout@v2
-        with:
-          token: ${{ secrets.PAT }}
-      - 
         name: Run Buildx
-        env:
-          IMAGE_NAME: ${{ steps.vars.outputs.dockerhub_user }}/${{ steps.vars.outputs.dockerhub_repo }}
-        run: |
-          docker buildx build \
-            --output "type=image,push=true" \
-            --platform ${{ steps.vars.outputs.buildx_platforms }} \
-            --tag "${IMAGE_NAME}:${{ steps.vars.outputs.image_tag }}" \
-            --tag "${IMAGE_NAME}:${{ steps.vars.outputs.image_tag }}-${{ steps.vars.outputs.tvh_build }}" \
-            --file Dockerfile . \
-            --build-arg BUILD_DATE="$(date -u +"%Y-%m-%dT%H:%M:%SZ")" \
-            --build-arg BASE_IMAGE=${{ steps.vars.outputs.image_from }}
+        uses: ilteoood/docker_buildx@master
+        with:
+          tag: ${{ steps.vars.outputs.image_tag }},${{ steps.vars.outputs.image_tag }}-${{ steps.vars.outputs.tvh_build }}
+          imageName: ${{ steps.vars.outputs.dockerhub_user }}/${{ steps.vars.outputs.dockerhub_repo }}
+          dockerFile: Dockerfile
+          buildArg: BUILD_DATE="$(date -u +"%Y-%m-%dT%H:%M:%SZ")",BASE_IMAGE=${{ steps.vars.outputs.image_from }}
+          publish: true
+          platform: ${{ steps.vars.outputs.buildx_platforms }}
+          dockerHubUser: ${{ steps.vars.outputs.dockerhub_user }}
+          dockerHubPassword: ${{ secrets.DOCKERHUB_PASS }}
       -
         name: Send Notification
         uses: sarisia/actions-status-discord@v1
@@ -299,18 +235,6 @@ jobs:
           BUILD=$(docker exec $CID tvheadend -v | awk -F'[_ ]' '{print $NF}' | awk -F'[_~]' '{print $1}')
           docker rm -f $CID
           echo ::set-output name=tvh_build::${BUILD}
-      - 
-        name: Dockerhub Login
-        env:
-          DOCKERHUB_PASS: ${{ secrets.DOCKERHUB_PASS }}
-        run: |
-          echo "${DOCKERHUB_PASS}" | docker login --username "${{ steps.vars.outputs.dockerhub_user }}" --password-stdin
-      -
-        name: Setup Buildx
-        uses: crazy-max/ghaction-docker-buildx@v1
-        with:
-          buildx-version: latest
-          qemu-version: latest
       -
         name: Checkout
         uses: actions/checkout@v2
@@ -318,17 +242,16 @@ jobs:
           token: ${{ secrets.PAT }}
       - 
         name: Run Buildx
-        env:
-          IMAGE_NAME: ${{ steps.vars.outputs.dockerhub_user }}/${{ steps.vars.outputs.dockerhub_repo }}
-        run: |
-          docker buildx build \
-            --output "type=image,push=true" \
-            --platform ${{ steps.vars.outputs.buildx_platforms }} \
-            --tag "${IMAGE_NAME}:${{ steps.vars.outputs.image_tag }}" \
-            --tag "${IMAGE_NAME}:${{ steps.vars.outputs.image_tag }}-${{ steps.vars.outputs.tvh_build }}" \
-            --file Dockerfile.ubuntu . \
-            --build-arg BUILD_DATE="$(date -u +"%Y-%m-%dT%H:%M:%SZ")" \
-            --build-arg BASE_IMAGE=${{ steps.vars.outputs.image_from }}
+        uses: ilteoood/docker_buildx@master
+        with:
+          tag: ${{ steps.vars.outputs.image_tag }},${{ steps.vars.outputs.image_tag }}-${{ steps.vars.outputs.tvh_build }}
+          imageName: ${{ steps.vars.outputs.dockerhub_user }}/${{ steps.vars.outputs.dockerhub_repo }}
+          dockerFile: Dockerfile.ubuntu
+          buildArg: BUILD_DATE="$(date -u +"%Y-%m-%dT%H:%M:%SZ")",BASE_IMAGE=${{ steps.vars.outputs.image_from }}
+          publish: true
+          platform: ${{ steps.vars.outputs.buildx_platforms }}
+          dockerHubUser: ${{ steps.vars.outputs.dockerhub_user }}
+          dockerHubPassword: ${{ secrets.DOCKERHUB_PASS }}
       -
         name: Send Notification
         uses: sarisia/actions-status-discord@v1
@@ -359,18 +282,6 @@ jobs:
           BUILD=$(docker exec $CID tvheadend -v | awk -F'[_ ]' '{print $NF}' | awk -F'[_~]' '{print $1}')
           docker rm -f $CID
           echo ::set-output name=tvh_build::${BUILD}
-      - 
-        name: Dockerhub Login
-        env:
-          DOCKERHUB_PASS: ${{ secrets.DOCKERHUB_PASS }}
-        run: |
-          echo "${DOCKERHUB_PASS}" | docker login --username "${{ steps.vars.outputs.dockerhub_user }}" --password-stdin
-      -
-        name: Setup Buildx
-        uses: crazy-max/ghaction-docker-buildx@v1
-        with:
-          buildx-version: latest
-          qemu-version: latest
       -
         name: Checkout
         uses: actions/checkout@v2
@@ -378,17 +289,16 @@ jobs:
           token: ${{ secrets.PAT }}
       - 
         name: Run Buildx
-        env:
-          IMAGE_NAME: ${{ steps.vars.outputs.dockerhub_user }}/${{ steps.vars.outputs.dockerhub_repo }}
-        run: |
-          docker buildx build \
-            --output "type=image,push=true" \
-            --platform ${{ steps.vars.outputs.buildx_platforms }} \
-            --tag "${IMAGE_NAME}:${{ steps.vars.outputs.image_tag }}" \
-            --tag "${IMAGE_NAME}:${{ steps.vars.outputs.image_tag }}-${{ steps.vars.outputs.tvh_build }}" \
-            --file Dockerfile . \
-            --build-arg BUILD_DATE="$(date -u +"%Y-%m-%dT%H:%M:%SZ")" \
-            --build-arg BASE_IMAGE=${{ steps.vars.outputs.image_from }}
+        uses: ilteoood/docker_buildx@master
+        with:
+          tag: ${{ steps.vars.outputs.image_tag }},${{ steps.vars.outputs.image_tag }}-${{ steps.vars.outputs.tvh_build }}
+          imageName: ${{ steps.vars.outputs.dockerhub_user }}/${{ steps.vars.outputs.dockerhub_repo }}
+          dockerFile: Dockerfile
+          buildArg: BUILD_DATE="$(date -u +"%Y-%m-%dT%H:%M:%SZ")",BASE_IMAGE=${{ steps.vars.outputs.image_from }}
+          publish: true
+          platform: ${{ steps.vars.outputs.buildx_platforms }}
+          dockerHubUser: ${{ steps.vars.outputs.dockerhub_user }}
+          dockerHubPassword: ${{ secrets.DOCKERHUB_PASS }}
       -
         name: Send Notification
         uses: sarisia/actions-status-discord@v1
@@ -419,18 +329,6 @@ jobs:
           BUILD=$(docker exec $CID tvheadend -v | awk -F'[_ ]' '{print $NF}' | awk -F'[_~]' '{print $1}')
           docker rm -f $CID
           echo ::set-output name=tvh_build::${BUILD}
-      - 
-        name: Dockerhub Login
-        env:
-          DOCKERHUB_PASS: ${{ secrets.DOCKERHUB_PASS }}
-        run: |
-          echo "${DOCKERHUB_PASS}" | docker login --username "${{ steps.vars.outputs.dockerhub_user }}" --password-stdin
-      -
-        name: Setup Buildx
-        uses: crazy-max/ghaction-docker-buildx@v1
-        with:
-          buildx-version: latest
-          qemu-version: latest
       -
         name: Checkout
         uses: actions/checkout@v2
@@ -438,17 +336,16 @@ jobs:
           token: ${{ secrets.PAT }}
       - 
         name: Run Buildx
-        env:
-          IMAGE_NAME: ${{ steps.vars.outputs.dockerhub_user }}/${{ steps.vars.outputs.dockerhub_repo }}
-        run: |
-          docker buildx build \
-            --output "type=image,push=true" \
-            --platform ${{ steps.vars.outputs.buildx_platforms }} \
-            --tag "${IMAGE_NAME}:${{ steps.vars.outputs.image_tag }}" \
-            --tag "${IMAGE_NAME}:${{ steps.vars.outputs.image_tag }}-${{ steps.vars.outputs.tvh_build }}" \
-            --file Dockerfile . \
-            --build-arg BUILD_DATE="$(date -u +"%Y-%m-%dT%H:%M:%SZ")" \
-            --build-arg BASE_IMAGE=${{ steps.vars.outputs.image_from }}
+        uses: ilteoood/docker_buildx@master
+        with:
+          tag: ${{ steps.vars.outputs.image_tag }},${{ steps.vars.outputs.image_tag }}-${{ steps.vars.outputs.tvh_build }}
+          imageName: ${{ steps.vars.outputs.dockerhub_user }}/${{ steps.vars.outputs.dockerhub_repo }}
+          dockerFile: Dockerfile
+          buildArg: BUILD_DATE="$(date -u +"%Y-%m-%dT%H:%M:%SZ")",BASE_IMAGE=${{ steps.vars.outputs.image_from }}
+          publish: true
+          platform: ${{ steps.vars.outputs.buildx_platforms }}
+          dockerHubUser: ${{ steps.vars.outputs.dockerhub_user }}
+          dockerHubPassword: ${{ secrets.DOCKERHUB_PASS }}
       -
         name: Send Notification
         uses: sarisia/actions-status-discord@v1
