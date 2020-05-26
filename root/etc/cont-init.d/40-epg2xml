@@ -1,16 +1,18 @@
 #!/usr/bin/with-contenv bash
 
+tmpdir=$(mktemp -d)
+
 # prepare epg2xml
 EPG2XML_GIT="https://github.com/${EPG2XML_FROM:-wiserain}/epg2xml.git"
-if ! (git clone --quiet "${EPG2XML_GIT}" > /dev/null /tmp/epg2xml); then
+if ! (git clone --quiet "${EPG2XML_GIT}" > /dev/null ${tmpdir}); then
 	echo "ERROR: Invalid repository url for epg2xml"
 	echo "ERROR: ${EPG2XML_GIT}"
 	exit 1
 fi
 
-if [[ ! -z "${EPG2XML_VER}" ]] && [[ -d "/tmp/epg2xml/.git" ]]; then
+if [[ ! -z "${EPG2XML_VER}" ]] && [[ -d "${tmpdir}/.git" ]]; then
 	echo " INFO: Checking out to \"${EPG2XML_VER}\""
-	cd /tmp/epg2xml && git checkout "${EPG2XML_VER}"
+	cd ${tmpdir} && git checkout "${EPG2XML_VER}"
 fi
 
 # make folder
@@ -19,7 +21,7 @@ fi
 # install epg2xml.py
 if [[ "${UPDATE_EPG2XML}" == "1" ]] || [[ ! -f "/epg2xml/epg2xml.py" ]]; then
 	echo "Installing epg2xml.py ..."
-	mv /tmp/epg2xml/epg2xml.py /epg2xml/ 2>/dev/null
+	mv ${tmpdir}/epg2xml.py /epg2xml/ 2>/dev/null
 else
 	echo "Using existing epg2xml.py. Skipping installation ..."
 fi
@@ -27,22 +29,17 @@ fi
 # install epg2xml.json as well if not exist
 if [[ ! -f /epg2xml/epg2xml.json ]]; then
 	echo "Installing epg2xml.json ..."
-	mv /tmp/epg2xml/epg2xml.json /epg2xml/ 2>/dev/null
+	mv ${tmpdir}/epg2xml.json /epg2xml/ 2>/dev/null
 else
 	echo "Using existing epg2xml.json. Skipping installation ..."
 fi
 
 # update Channel.json
 if [[ ! -f /epg2xml/Channel.json ]] || [[ "${UPDATE_CHANNEL}" == "1" ]]; then
-	CH_URL="https://raw.githubusercontent.com/${CHANNEL_FROM:-wonipapa}/Channel.json/master/Channel.json"
-	if [[ `wget -S --spider "${CH_URL}" 2>&1 | grep 'HTTP/1.1 200 OK'` ]]; then
-		wget -q "${CH_URL}" -O /epg2xml/Channel.json
-		echo "Channel.json updated"
-	else
-		echo "ERROR: Invalid download url for Channel.json"
-		echo "ERROR: ${CH_URL}"
-		exit 1
-	fi
+	echo "Installing Channel.json ..."
+	mv ${tmpdir}/Channel.json /epg2xml/ 2>/dev/null
+else
+	echo "Using existing Channel.json. Skipping installation ..."
 fi
 
 # permissions

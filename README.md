@@ -97,10 +97,8 @@ epg2xml 관련 환경변수는 다음과 같다.
 
 | 이름  | 설명  | 기본값 |
 |---|---|---|
-| ```EPG2XML_FROM```  | wonipapa님의 개발 중단으로 인해 각자 도생하고 있는 현재의 상황에 보다 유연하게 대응하고자 어디서 가져올 것인지 ```EPG2XML_FROM="wiserain"```을 통해서 지정할 수 있다. 정확하게는 ```git clone https://github.com/${EPG2XML_FROM}/epg2xml.git``` 명령어로 가져온다.   | ```wiserain```  |
 | ```EPG2XML_VER```  | master가 아닌 특정 commit나 branch의 버전을 사용하고자 할 경우 입력한다. ```git checkout ${BRANCH or SHA1}```   | ```null```  |
 | ```UPDATE_EPG2XML```  | epg2xml을 업데이트 하고 싶지 않다면 ```1```이 아닌 값을 입력한다. ```epg2xml.json```은 이 값에 관계없이 파일이 없을때만 설치한다. | ```1```  |
-| ```CHANNEL_FROM```  | epg2xml 스크립트와 마찬가지로 Channel.json을 어디에서 가져올지 지정할 수 있다. | ```wonipapa```  |
 | ```UPDATE_CHANNEL```  | 채널 정보를 담고 있는 ```Channel.json``` 파일을 업데이트 한다. 더이상 업데이트 하지 않기를 원하면 ```1```이 아닌 값을 입력한다. | ```1```  |
 
 추가로 사용 가능한 환경변수는 다음과 같다.
