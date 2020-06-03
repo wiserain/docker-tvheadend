@@ -621,6 +621,8 @@ RUN \
 		libtool \
 		pkg-config \
 		wget && \
+	echo "**** setting default /usr/bin/python ****" && \
+	if [ ! -e /usr/bin/python ]; then ln -sf /usr/bin/python3 /usr/bin/python; fi && \
 	echo "**** compile libiconv ****" && \
 	wget https://ftp.gnu.org/pub/gnu/libiconv/libiconv-1.16.tar.gz -P /tmp/ && \
 	cd /tmp && \
@@ -648,8 +650,8 @@ RUN \
 		# libx11-dev \
 		markdown \
 		pngquant \
-		python \
-		python-requests \
+		python3-requests \
+                python3-setuptools \
 		zlib1g-dev \
 		\
 		`#Codec` \
@@ -733,20 +735,20 @@ RUN \
         expat \
         libgomp1 \
         `#TVHEADEND` \
-		bzip2 \
-		curl \
-		gzip \
-		libargtable2-0 \
-		libavahi-common3 \
-		libavahi-client3 \
-		libdvbcsa1 \
-		libpcre2-8-0 \
-		liburiparser1 \
-		mesa-va-drivers \
-		mesa-vdpau-drivers \
-		python \
-		wget \
-		xmltv-util && \
+        bzip2 \
+        curl \
+        gzip \
+        libargtable2-0 \
+        libavahi-common3 \
+        libavahi-client3 \
+        libdvbcsa1 \
+        libpcre2-8-0 \
+        liburiparser1 \
+        mesa-va-drivers \
+        mesa-vdpau-drivers \
+        python3-requests \
+        wget \
+        xmltv-util && \
 	echo "**** Add Picons ****" && \
 	mkdir -p /picons && \
 	curl -o \
