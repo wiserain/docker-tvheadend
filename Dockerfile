@@ -1,4 +1,4 @@
-FROM lsiobase/alpine:3.11 as buildstage
+FROM lsiobase/alpine:3.12 as buildstage
 ############## build stage ##############
 
 # package versions
@@ -105,7 +105,7 @@ RUN \
 	perl-xml-writer \
 	pkgconf \
 	pngquant \
-	python \
+	python2 \
 	sdl-dev \
 	tar \
 	uriparser-dev \
@@ -155,9 +155,6 @@ RUN \
  git clone https://github.com/tvheadend/tvheadend.git /tmp/tvheadend && \
  cd /tmp/tvheadend && \
  git checkout ${TVHEADEND_COMMIT} && \
- echo "**** use ffmpeg 4.1.5 minimum requirement for gcc9 with alpine 3.11 ****" && \
- sed -i 's/ffmpeg-4.1.1/ffmpeg-4.1.5/g' Makefile.ffmpeg && \
- sed -i 's/9076734d98fb8d6ad1cff8f8f68228afa0bb2204/850ca59493aa6d773a1346257c9fbee80ba6efe0/g' Makefile.ffmpeg && \
  ./configure \
 	`#Encoding` \
 	--$(if [ "$TARGETARCH" = "amd64" ]; then echo "en"; else echo "dis"; fi)able-ffmpeg_static \
