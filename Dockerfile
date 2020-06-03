@@ -9,6 +9,9 @@ ARG MAKEFLAGS="-j2"
 ARG TARGETARCH
 ARG TVHEADEND_COMMIT
 
+# copy patches
+COPY patches/ /tmp/patches/
+
 RUN \
  echo "**** install build packages ****" && \
  apk add --no-cache \
@@ -120,6 +123,7 @@ RUN \
  tar xf \
  /tmp/argtable-src.tar.gz -C \
 	/tmp/argtable --strip-components=1 && \
+ cp /tmp/patches/config.* /tmp/argtable && \
  cd /tmp/argtable && \
  ./configure \
 	--prefix=/usr && \
