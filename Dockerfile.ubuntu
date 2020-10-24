@@ -31,7 +31,8 @@ RUN \
 		libdrm-dev \
 		libx11-dev \
 		xorg-dev && \
-	git clone https://github.com/01org/libva /tmp/libva && \
+	git clone https://github.com/intel/libva /tmp/libva \
+                -b $(curl -sX GET "https://api.github.com/repos/intel/libva/releases/latest" | awk '/tag_name/{print $4;exit}' FS='[""]') && \
 	cd /tmp/libva && \
 	./autogen.sh && \
 	./configure && \
@@ -40,28 +41,32 @@ RUN \
 	ldconfig && \
 	# apg-get -yq --no-install-recommends libcrmt-dev libcrmt1
 	echo "**** compile cmrt ****" && \
-	git clone https://github.com/01org/cmrt /tmp/cmrt && \
+	git clone https://github.com/intel/cmrt /tmp/cmrt \
+                -b $(curl -sX GET "https://api.github.com/repos/intel/cmrt/releases/latest" | awk '/tag_name/{print $4;exit}' FS='[""]') && \
 	cd /tmp/cmrt && \
 	./autogen.sh && \
 	./configure && \
 	make VERBOSE=1 && \
 	make install && \
 	echo "**** compile intel-hybrid-driver ****" && \
-	git clone https://github.com/01org/intel-hybrid-driver /tmp/intel-hybrid-driver && \
+	git clone https://github.com/intel/intel-hybrid-driver /tmp/intel-hybrid-driver \
+                -b $(curl -sX GET "https://api.github.com/repos/intel/intel-hybrid-driver/releases/latest" | awk '/tag_name/{print $4;exit}' FS='[""]') && \
 	cd /tmp/intel-hybrid-driver && \
 	./autogen.sh && \
 	./configure && \
 	make VERBOSE=1 && \
 	make install && \
 	echo "**** compile intel-vaapi-driver ****" && \
-	git clone https://github.com/01org/intel-vaapi-driver /tmp/intel-vaapi-driver && \
+	git clone https://github.com/intel/intel-vaapi-driver /tmp/intel-vaapi-driver \
+                -b $(curl -sX GET "https://api.github.com/repos/intel/intel-vaapi-driver/releases/latest" | awk '/tag_name/{print $4;exit}' FS='[""]') && \
 	cd /tmp/intel-vaapi-driver && \
 	./autogen.sh && \
 	./configure --enable-hybrid-codec && \
 	make VERBOSE=1 && \
 	make install && \
 	echo "**** compile libva-utils ****" && \
-	git clone https://github.com/intel/libva-utils /tmp/libva-utils && \
+	git clone https://github.com/intel/libva-utils /tmp/libva-utils \
+                -b $(curl -sX GET "https://api.github.com/repos/intel/libva-utils/releases/latest" | awk '/tag_name/{print $4;exit}' FS='[""]') && \
 	cd /tmp/libva-utils && \
 	./autogen.sh && \
 	./configure && \
