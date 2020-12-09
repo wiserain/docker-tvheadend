@@ -30,15 +30,15 @@ jobs:
           token: ${{ secrets.PAT }}
       - 
         name: Run Buildx
-        uses: ilteoood/docker_buildx@master
+        uses: ilteoood/docker_buildx@1.1.0
         with:
           tag: latest
           imageName: ${{ steps.vars.outputs.dockerhub_user }}/${{ steps.vars.outputs.dockerhub_repo }}
           dockerFile: Dockerfile
           publish: true
           platform: ${{ steps.vars.outputs.buildx_platforms }}
-          dockerHubUser: ${{ steps.vars.outputs.dockerhub_user }}
-          dockerHubPassword: ${{ secrets.DOCKERHUB_PASS }}
+          dockerUser: ${{ steps.vars.outputs.dockerhub_user }}
+          dockerPassword: ${{ secrets.DOCKERHUB_PASS }}
       -
         name: Send Notification
         uses: sarisia/actions-status-discord@v1
@@ -69,15 +69,15 @@ jobs:
           token: ${{ secrets.PAT }}
       - 
         name: Run Buildx
-        uses: ilteoood/docker_buildx@master
+        uses: ilteoood/docker_buildx@1.1.0
         with:
           tag: stable
           imageName: ${{ steps.vars.outputs.dockerhub_user }}/${{ steps.vars.outputs.dockerhub_repo }}
           dockerFile: Dockerfile
           publish: true
           platform: ${{ steps.vars.outputs.buildx_platforms }}
-          dockerHubUser: ${{ steps.vars.outputs.dockerhub_user }}
-          dockerHubPassword: ${{ secrets.DOCKERHUB_PASS }}
+          dockerUser: ${{ steps.vars.outputs.dockerhub_user }}
+          dockerPassword: ${{ secrets.DOCKERHUB_PASS }}
       -
         name: Send Notification
         uses: sarisia/actions-status-discord@v1
@@ -108,15 +108,15 @@ jobs:
           token: ${{ secrets.PAT }}
       - 
         name: Run Buildx
-        uses: ilteoood/docker_buildx@master
+        uses: ilteoood/docker_buildx@1.1.0
         with:
           tag: ubuntu
           imageName: ${{ steps.vars.outputs.dockerhub_user }}/${{ steps.vars.outputs.dockerhub_repo }}
           dockerFile: Dockerfile.ubuntu
           publish: true
           platform: ${{ steps.vars.outputs.buildx_platforms }}
-          dockerHubUser: ${{ steps.vars.outputs.dockerhub_user }}
-          dockerHubPassword: ${{ secrets.DOCKERHUB_PASS }}
+          dockerUser: ${{ steps.vars.outputs.dockerhub_user }}
+          dockerPassword: ${{ secrets.DOCKERHUB_PASS }}
       -
         name: Send Notification
         uses: sarisia/actions-status-discord@v1
@@ -155,7 +155,7 @@ jobs:
           token: ${{ secrets.PAT }}
       - 
         name: Run Buildx
-        uses: ilteoood/docker_buildx@master
+        uses: ilteoood/docker_buildx@1.1.0
         with:
           tag: ${{ steps.vars.outputs.image_tag }},${{ steps.vars.outputs.image_tag }}-${{ steps.vars.outputs.tvh_build }}
           imageName: ${{ steps.vars.outputs.dockerhub_user }}/${{ steps.vars.outputs.dockerhub_repo }}
@@ -163,8 +163,8 @@ jobs:
           buildArg: BASE_IMAGE=${{ steps.vars.outputs.image_from }}
           publish: true
           platform: ${{ steps.vars.outputs.buildx_platforms }}
-          dockerHubUser: ${{ steps.vars.outputs.dockerhub_user }}
-          dockerHubPassword: ${{ secrets.DOCKERHUB_PASS }}
+          dockerUser: ${{ steps.vars.outputs.dockerhub_user }}
+          dockerPassword: ${{ secrets.DOCKERHUB_PASS }}
       -
         name: Send Notification
         uses: sarisia/actions-status-discord@v1
@@ -203,7 +203,7 @@ jobs:
           token: ${{ secrets.PAT }}
       - 
         name: Run Buildx
-        uses: ilteoood/docker_buildx@master
+        uses: ilteoood/docker_buildx@1.1.0
         with:
           tag: ${{ steps.vars.outputs.image_tag }},${{ steps.vars.outputs.image_tag }}-${{ steps.vars.outputs.tvh_build }}
           imageName: ${{ steps.vars.outputs.dockerhub_user }}/${{ steps.vars.outputs.dockerhub_repo }}
@@ -211,8 +211,8 @@ jobs:
           buildArg: BASE_IMAGE=${{ steps.vars.outputs.image_from }}
           publish: true
           platform: ${{ steps.vars.outputs.buildx_platforms }}
-          dockerHubUser: ${{ steps.vars.outputs.dockerhub_user }}
-          dockerHubPassword: ${{ secrets.DOCKERHUB_PASS }}
+          dockerUser: ${{ steps.vars.outputs.dockerhub_user }}
+          dockerPassword: ${{ secrets.DOCKERHUB_PASS }}
       -
         name: Send Notification
         uses: sarisia/actions-status-discord@v1
@@ -251,7 +251,7 @@ jobs:
           token: ${{ secrets.PAT }}
       - 
         name: Run Buildx
-        uses: ilteoood/docker_buildx@master
+        uses: ilteoood/docker_buildx@1.1.0
         with:
           tag: ${{ steps.vars.outputs.image_tag }},${{ steps.vars.outputs.image_tag }}-${{ steps.vars.outputs.tvh_build }}
           imageName: ${{ steps.vars.outputs.dockerhub_user }}/${{ steps.vars.outputs.dockerhub_repo }}
@@ -259,8 +259,8 @@ jobs:
           buildArg: BASE_IMAGE=${{ steps.vars.outputs.image_from }}
           publish: true
           platform: ${{ steps.vars.outputs.buildx_platforms }}
-          dockerHubUser: ${{ steps.vars.outputs.dockerhub_user }}
-          dockerHubPassword: ${{ secrets.DOCKERHUB_PASS }}
+          dockerUser: ${{ steps.vars.outputs.dockerhub_user }}
+          dockerPassword: ${{ secrets.DOCKERHUB_PASS }}
       -
         name: Send Notification
         uses: sarisia/actions-status-discord@v1
@@ -298,7 +298,7 @@ jobs:
           token: ${{ secrets.PAT }}
       - 
         name: Run Buildx
-        uses: ilteoood/docker_buildx@master
+        uses: ilteoood/docker_buildx@1.1.0
         with:
           tag: ${{ steps.vars.outputs.image_tag }},${{ steps.vars.outputs.image_tag }}-${{ steps.vars.outputs.tvh_build }}
           imageName: ${{ steps.vars.outputs.dockerhub_user }}/${{ steps.vars.outputs.dockerhub_repo }}
@@ -306,8 +306,8 @@ jobs:
           buildArg: BASE_IMAGE=${{ steps.vars.outputs.image_from }}
           publish: true
           platform: ${{ steps.vars.outputs.buildx_platforms }}
-          dockerHubUser: ${{ steps.vars.outputs.dockerhub_user }}
-          dockerHubPassword: ${{ secrets.DOCKERHUB_PASS }}
+          dockerUser: ${{ steps.vars.outputs.dockerhub_user }}
+          dockerPassword: ${{ secrets.DOCKERHUB_PASS }}
       -
         name: Send Notification
         uses: sarisia/actions-status-discord@v1
@@ -345,7 +345,7 @@ jobs:
           token: ${{ secrets.PAT }}
       - 
         name: Run Buildx
-        uses: ilteoood/docker_buildx@master
+        uses: ilteoood/docker_buildx@1.1.0
         with:
           tag: ${{ steps.vars.outputs.image_tag }},${{ steps.vars.outputs.image_tag }}-${{ steps.vars.outputs.tvh_build }}
           imageName: ${{ steps.vars.outputs.dockerhub_user }}/${{ steps.vars.outputs.dockerhub_repo }}
@@ -353,8 +353,8 @@ jobs:
           buildArg: BASE_IMAGE=${{ steps.vars.outputs.image_from }}
           publish: true
           platform: ${{ steps.vars.outputs.buildx_platforms }}
-          dockerHubUser: ${{ steps.vars.outputs.dockerhub_user }}
-          dockerHubPassword: ${{ secrets.DOCKERHUB_PASS }}
+          dockerUser: ${{ steps.vars.outputs.dockerhub_user }}
+          dockerPassword: ${{ secrets.DOCKERHUB_PASS }}
       -
         name: Send Notification
         uses: sarisia/actions-status-discord@v1
