@@ -3,6 +3,10 @@ name: docker-buildx
 on:
   watch:
     types: [started]
+  push:
+    branches:
+      - '*'
+      - '!master'
   schedule:
     - cron: "0 21 * * 5"
 
@@ -12,138 +16,110 @@ env:
 
 jobs:
   build-tvhbase-latest:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     if: (github.event_name != 'watch') || (github.actor == github.event.repository.owner.login)
     steps:
-      - 
-        name: Load Variables
-        id: vars
-        run: |
-          echo ::set-output name=buildx_platforms::linux/amd64,linux/arm/v7,linux/arm64
-          echo ::set-output name=dockerhub_user::wiserain
-          echo ::set-output name=dockerhub_repo::tvhbase
       -
         name: Checkout
         uses: actions/checkout@v2
         with:
           ref: 'latest'
-          token: ${{ secrets.PAT }}
       - 
         name: Run Buildx
         uses: ilteoood/docker_buildx@1.1.0
         with:
           tag: latest
-          imageName: ${{ steps.vars.outputs.dockerhub_user }}/${{ steps.vars.outputs.dockerhub_repo }}
+          imageName: ${{ env.DOCKERHUB_USER }}/tvhbase
           dockerFile: Dockerfile
           publish: true
-          platform: ${{ steps.vars.outputs.buildx_platforms }}
-          dockerUser: ${{ steps.vars.outputs.dockerhub_user }}
+          platform: linux/amd64,linux/arm/v7,linux/arm64
+          dockerUser: ${{ env.DOCKERHUB_USER }}
           dockerPassword: ${{ secrets.DOCKERHUB_PASS }}
       -
         name: Send Notification
         uses: sarisia/actions-status-discord@v1
-        if: always()
+        if: failure()
         with:
           webhook: ${{ secrets.DISCORD_WEBHOOK }}
           status: ${{ job.status }}
           description: |
-            Image: ${{ steps.vars.outputs.dockerhub_user }}/${{ steps.vars.outputs.dockerhub_repo }}
+            Image: ${{ env.DOCKERHUB_USER }}/tvhbase
             Tags: latest
 
   build-tvhbase-stable:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     if: (github.event_name != 'watch') || (github.actor == github.event.repository.owner.login)
     steps:
-      - 
-        name: Load Variables
-        id: vars
-        run: |
-          echo ::set-output name=buildx_platforms::linux/amd64,linux/arm/v7,linux/arm64
-          echo ::set-output name=dockerhub_user::wiserain
-          echo ::set-output name=dockerhub_repo::tvhbase
       -
         name: Checkout
         uses: actions/checkout@v2
         with:
           ref: 'stable'
-          token: ${{ secrets.PAT }}
       - 
         name: Run Buildx
         uses: ilteoood/docker_buildx@1.1.0
         with:
           tag: stable
-          imageName: ${{ steps.vars.outputs.dockerhub_user }}/${{ steps.vars.outputs.dockerhub_repo }}
+          imageName: ${{ env.DOCKERHUB_USER }}/tvhbase
           dockerFile: Dockerfile
           publish: true
-          platform: ${{ steps.vars.outputs.buildx_platforms }}
-          dockerUser: ${{ steps.vars.outputs.dockerhub_user }}
+          platform: linux/amd64,linux/arm/v7,linux/arm64
+          dockerUser: ${{ env.DOCKERHUB_USER }}
           dockerPassword: ${{ secrets.DOCKERHUB_PASS }}
       -
         name: Send Notification
         uses: sarisia/actions-status-discord@v1
-        if: always()
+        if: failure()
         with:
           webhook: ${{ secrets.DISCORD_WEBHOOK }}
           status: ${{ job.status }}
           description: |
-            Image: ${{ steps.vars.outputs.dockerhub_user }}/${{ steps.vars.outputs.dockerhub_repo }}
+            Image: ${{ env.DOCKERHUB_USER }}/tvhbase
             Tags: stable
 
   build-tvhbase-ubuntu:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     if: (github.event_name != 'watch') || (github.actor == github.event.repository.owner.login)
     steps:
-      - 
-        name: Load Variables
-        id: vars
-        run: |
-          echo ::set-output name=buildx_platforms::linux/amd64
-          echo ::set-output name=dockerhub_user::wiserain
-          echo ::set-output name=dockerhub_repo::tvhbase
       -
         name: Checkout
         uses: actions/checkout@v2
         with:
           ref: 'latest'
-          token: ${{ secrets.PAT }}
       - 
         name: Run Buildx
         uses: ilteoood/docker_buildx@1.1.0
         with:
           tag: ubuntu
-          imageName: ${{ steps.vars.outputs.dockerhub_user }}/${{ steps.vars.outputs.dockerhub_repo }}
+          imageName: ${{ env.DOCKERHUB_USER }}/tvhbase
           dockerFile: Dockerfile.ubuntu
           publish: true
-          platform: ${{ steps.vars.outputs.buildx_platforms }}
-          dockerUser: ${{ steps.vars.outputs.dockerhub_user }}
+          platform: linux/amd64
+          dockerUser: ${{ env.DOCKERHUB_USER }}
           dockerPassword: ${{ secrets.DOCKERHUB_PASS }}
       -
         name: Send Notification
         uses: sarisia/actions-status-discord@v1
-        if: always()
+        if: failure()
         with:
           webhook: ${{ secrets.DISCORD_WEBHOOK }}
           status: ${{ job.status }}
           description: |
-            Image: ${{ steps.vars.outputs.dockerhub_user }}/${{ steps.vars.outputs.dockerhub_repo }}
+            Image: ${{ env.DOCKERHUB_USER }}/tvhbase
             Tags: ubuntu
 
   build-tvheadend-latest:
     needs: build-tvhbase-latest
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     if: (github.event_name != 'watch') || (github.actor == github.event.repository.owner.login)
+    env:
+      IMAGE_FROM: wiserain/tvhbase:latest
+      IMAGE_TAG: latest
     steps:
       - 
         name: Load Variables
         id: vars
-        env:
-          IMAGE_FROM: wiserain/tvhbase:latest
         run: |
-          echo ::set-output name=buildx_platforms::linux/amd64,linux/arm/v7,linux/arm64
-          echo ::set-output name=dockerhub_user::wiserain
-          echo ::set-output name=dockerhub_repo::tvheadend
-          echo ::set-output name=image_tag::latest
-          echo ::set-output name=image_from::${IMAGE_FROM}
           CID=$(docker run -d $IMAGE_FROM)
           BUILD=$(docker exec $CID tvheadend -v | awk -F'[_ ]' '{print $NF}' | awk -F'[_~]' '{print $1}')
           docker rm -f $CID
@@ -151,47 +127,41 @@ jobs:
       -
         name: Checkout
         uses: actions/checkout@v2
-        with:
-          token: ${{ secrets.PAT }}
       - 
         name: Run Buildx
         uses: ilteoood/docker_buildx@1.1.0
         with:
-          tag: ${{ steps.vars.outputs.image_tag }},${{ steps.vars.outputs.image_tag }}-${{ steps.vars.outputs.tvh_build }}
-          imageName: ${{ steps.vars.outputs.dockerhub_user }}/${{ steps.vars.outputs.dockerhub_repo }}
+          tag: ${{ env.IMAGE_TAG }},${{ env.IMAGE_TAG }}-${{ steps.vars.outputs.tvh_build }}
+          imageName: ${{ env.DOCKERHUB_USER }}/${{ env.DOCKERHUB_REPO }}
           dockerFile: Dockerfile
-          buildArg: BASE_IMAGE=${{ steps.vars.outputs.image_from }}
+          buildArg: BASE_IMAGE=${{ env.IMAGE_FROM }}
           publish: true
-          platform: ${{ steps.vars.outputs.buildx_platforms }}
-          dockerUser: ${{ steps.vars.outputs.dockerhub_user }}
+          platform: linux/amd64,linux/arm/v7,linux/arm64
+          dockerUser: ${{ env.DOCKERHUB_USER }}
           dockerPassword: ${{ secrets.DOCKERHUB_PASS }}
       -
         name: Send Notification
         uses: sarisia/actions-status-discord@v1
-        if: always()
+        if: failure()
         with:
           webhook: ${{ secrets.DISCORD_WEBHOOK }}
           status: ${{ job.status }}
           description: |
-            Image: ${{ steps.vars.outputs.dockerhub_user }}/${{ steps.vars.outputs.dockerhub_repo }}
-            Tags: ${{ steps.vars.outputs.image_tag }}, ${{ steps.vars.outputs.image_tag }}-${{ steps.vars.outputs.tvh_build }}
+            Image: ${{ env.DOCKERHUB_USER }}/${{ env.DOCKERHUB_REPO }}
+            Tags: ${{ env.IMAGE_TAG }}, ${{ env.IMAGE_TAG }}-${{ steps.vars.outputs.tvh_build }}
 
   build-tvheadend-stable:
     needs: build-tvhbase-stable
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     if: (github.event_name != 'watch') || (github.actor == github.event.repository.owner.login)
+    env:
+      IMAGE_FROM: wiserain/tvhbase:stable
+      IMAGE_TAG: stable
     steps:
       - 
         name: Load Variables
         id: vars
-        env:
-          IMAGE_FROM: wiserain/tvhbase:stable
         run: |
-          echo ::set-output name=buildx_platforms::linux/amd64,linux/arm/v7,linux/arm64
-          echo ::set-output name=dockerhub_user::wiserain
-          echo ::set-output name=dockerhub_repo::tvheadend
-          echo ::set-output name=image_tag::stable
-          echo ::set-output name=image_from::${IMAGE_FROM}
           CID=$(docker run -d $IMAGE_FROM)
           BUILD=$(docker exec $CID tvheadend -v | awk -F'[_ ]' '{print $NF}' | awk -F'[_~]' '{print $1}')
           docker rm -f $CID
@@ -199,47 +169,41 @@ jobs:
       -
         name: Checkout
         uses: actions/checkout@v2
-        with:
-          token: ${{ secrets.PAT }}
       - 
         name: Run Buildx
         uses: ilteoood/docker_buildx@1.1.0
         with:
-          tag: ${{ steps.vars.outputs.image_tag }},${{ steps.vars.outputs.image_tag }}-${{ steps.vars.outputs.tvh_build }}
-          imageName: ${{ steps.vars.outputs.dockerhub_user }}/${{ steps.vars.outputs.dockerhub_repo }}
+          tag: ${{ env.IMAGE_TAG }},${{ env.IMAGE_TAG }}-${{ steps.vars.outputs.tvh_build }}
+          imageName: ${{ env.DOCKERHUB_USER }}/${{ env.DOCKERHUB_REPO }}
           dockerFile: Dockerfile
-          buildArg: BASE_IMAGE=${{ steps.vars.outputs.image_from }}
+          buildArg: BASE_IMAGE=${{ env.IMAGE_FROM }}
           publish: true
-          platform: ${{ steps.vars.outputs.buildx_platforms }}
-          dockerUser: ${{ steps.vars.outputs.dockerhub_user }}
+          platform: linux/amd64,linux/arm/v7,linux/arm64
+          dockerUser: ${{ env.DOCKERHUB_USER }}
           dockerPassword: ${{ secrets.DOCKERHUB_PASS }}
       -
         name: Send Notification
         uses: sarisia/actions-status-discord@v1
-        if: always()
+        if: failure()
         with:
           webhook: ${{ secrets.DISCORD_WEBHOOK }}
           status: ${{ job.status }}
           description: |
-            Image: ${{ steps.vars.outputs.dockerhub_user }}/${{ steps.vars.outputs.dockerhub_repo }}
-            Tags: ${{ steps.vars.outputs.image_tag }}, ${{ steps.vars.outputs.image_tag }}-${{ steps.vars.outputs.tvh_build }}
+            Image: ${{ env.DOCKERHUB_USER }}/${{ env.DOCKERHUB_REPO }}
+            Tags: ${{ env.IMAGE_TAG }}, ${{ env.IMAGE_TAG }}-${{ steps.vars.outputs.tvh_build }}
 
   build-tvheadend-ubuntu:
     needs: build-tvhbase-ubuntu
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     if: (github.event_name != 'watch') || (github.actor == github.event.repository.owner.login)
+    env:
+      IMAGE_FROM: wiserain/tvhbase:ubuntu
+      IMAGE_TAG: ubuntu
     steps:
       - 
         name: Load Variables
         id: vars
-        env:
-          IMAGE_FROM: wiserain/tvhbase:ubuntu
         run: |
-          echo ::set-output name=buildx_platforms::linux/amd64
-          echo ::set-output name=dockerhub_user::wiserain
-          echo ::set-output name=dockerhub_repo::tvheadend
-          echo ::set-output name=image_tag::ubuntu
-          echo ::set-output name=image_from::${IMAGE_FROM}
           CID=$(docker run -d $IMAGE_FROM)
           BUILD=$(docker exec $CID tvheadend -v | awk -F'[_ ]' '{print $NF}' | awk -F'[_~]' '{print $1}')
           docker rm -f $CID
@@ -247,46 +211,40 @@ jobs:
       -
         name: Checkout
         uses: actions/checkout@v2
-        with:
-          token: ${{ secrets.PAT }}
       - 
         name: Run Buildx
         uses: ilteoood/docker_buildx@1.1.0
         with:
-          tag: ${{ steps.vars.outputs.image_tag }},${{ steps.vars.outputs.image_tag }}-${{ steps.vars.outputs.tvh_build }}
-          imageName: ${{ steps.vars.outputs.dockerhub_user }}/${{ steps.vars.outputs.dockerhub_repo }}
+          tag: ${{ env.IMAGE_TAG }},${{ env.IMAGE_TAG }}-${{ steps.vars.outputs.tvh_build }}
+          imageName: ${{ env.DOCKERHUB_USER }}/${{ env.DOCKERHUB_REPO }}
           dockerFile: Dockerfile.ubuntu
-          buildArg: BASE_IMAGE=${{ steps.vars.outputs.image_from }}
+          buildArg: BASE_IMAGE=${{ env.IMAGE_FROM }}
           publish: true
-          platform: ${{ steps.vars.outputs.buildx_platforms }}
-          dockerUser: ${{ steps.vars.outputs.dockerhub_user }}
+          platform: linux/amd64
+          dockerUser: ${{ env.DOCKERHUB_USER }}
           dockerPassword: ${{ secrets.DOCKERHUB_PASS }}
       -
         name: Send Notification
         uses: sarisia/actions-status-discord@v1
-        if: always()
+        if: failure()
         with:
           webhook: ${{ secrets.DISCORD_WEBHOOK }}
           status: ${{ job.status }}
           description: |
-            Image: ${{ steps.vars.outputs.dockerhub_user }}/${{ steps.vars.outputs.dockerhub_repo }}
-            Tags: ${{ steps.vars.outputs.image_tag }}, ${{ steps.vars.outputs.image_tag }}-${{ steps.vars.outputs.tvh_build }}
+            Image: ${{ env.DOCKERHUB_USER }}/${{ env.DOCKERHUB_REPO }}
+            Tags: ${{ env.IMAGE_TAG }}, ${{ env.IMAGE_TAG }}-${{ steps.vars.outputs.tvh_build }}
 
   build-tvheadend-latest-ns:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     if: (github.event_name != 'watch') || (github.actor == github.event.repository.owner.login)
+    env:
+      IMAGE_FROM: linuxserver/tvheadend:latest
+      IMAGE_TAG: latest-ns
     steps:
       - 
         name: Load Variables
         id: vars
-        env:
-          IMAGE_FROM: linuxserver/tvheadend:latest
         run: |
-          echo ::set-output name=buildx_platforms::linux/amd64,linux/arm/v7,linux/arm64
-          echo ::set-output name=dockerhub_user::wiserain
-          echo ::set-output name=dockerhub_repo::tvheadend
-          echo ::set-output name=image_tag::latest-ns
-          echo ::set-output name=image_from::${IMAGE_FROM}
           CID=$(docker run -d $IMAGE_FROM)
           BUILD=$(docker exec $CID tvheadend -v | awk -F'[_ ]' '{print $NF}' | awk -F'[_~]' '{print $1}')
           docker rm -f $CID
@@ -294,46 +252,40 @@ jobs:
       -
         name: Checkout
         uses: actions/checkout@v2
-        with:
-          token: ${{ secrets.PAT }}
       - 
         name: Run Buildx
         uses: ilteoood/docker_buildx@1.1.0
         with:
-          tag: ${{ steps.vars.outputs.image_tag }},${{ steps.vars.outputs.image_tag }}-${{ steps.vars.outputs.tvh_build }}
-          imageName: ${{ steps.vars.outputs.dockerhub_user }}/${{ steps.vars.outputs.dockerhub_repo }}
+          tag: ${{ env.IMAGE_TAG }},${{ env.IMAGE_TAG }}-${{ steps.vars.outputs.tvh_build }}
+          imageName: ${{ env.DOCKERHUB_USER }}/${{ env.DOCKERHUB_REPO }}
           dockerFile: Dockerfile
-          buildArg: BASE_IMAGE=${{ steps.vars.outputs.image_from }}
+          buildArg: BASE_IMAGE=${{ env.IMAGE_FROM }}
           publish: true
-          platform: ${{ steps.vars.outputs.buildx_platforms }}
-          dockerUser: ${{ steps.vars.outputs.dockerhub_user }}
+          platform: linux/amd64,linux/arm/v7,linux/arm64
+          dockerUser: ${{ env.DOCKERHUB_USER }}
           dockerPassword: ${{ secrets.DOCKERHUB_PASS }}
       -
         name: Send Notification
         uses: sarisia/actions-status-discord@v1
-        if: always()
+        if: failure()
         with:
           webhook: ${{ secrets.DISCORD_WEBHOOK }}
           status: ${{ job.status }}
           description: |
-            Image: ${{ steps.vars.outputs.dockerhub_user }}/${{ steps.vars.outputs.dockerhub_repo }}
-            Tags: ${{ steps.vars.outputs.image_tag }}, ${{ steps.vars.outputs.image_tag }}-${{ steps.vars.outputs.tvh_build }}
+            Image: ${{ env.DOCKERHUB_USER }}/${{ env.DOCKERHUB_REPO }}
+            Tags: ${{ env.IMAGE_TAG }}, ${{ env.IMAGE_TAG }}-${{ steps.vars.outputs.tvh_build }}
 
   build-tvheadend-stable-ns:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     if: (github.event_name != 'watch') || (github.actor == github.event.repository.owner.login)
+    env:
+      IMAGE_FROM: linuxserver/tvheadend:release-4.2
+      IMAGE_TAG: stable-ns
     steps:
       - 
         name: Load Variables
         id: vars
-        env:
-          IMAGE_FROM: linuxserver/tvheadend:release-4.2
         run: |
-          echo ::set-output name=buildx_platforms::linux/amd64,linux/arm/v7,linux/arm64
-          echo ::set-output name=dockerhub_user::wiserain
-          echo ::set-output name=dockerhub_repo::tvheadend
-          echo ::set-output name=image_tag::stable-ns
-          echo ::set-output name=image_from::${IMAGE_FROM}
           CID=$(docker run -d $IMAGE_FROM)
           BUILD=$(docker exec $CID tvheadend -v | awk -F'[_ ]' '{print $NF}' | awk -F'[_~]' '{print $1}')
           docker rm -f $CID
@@ -341,30 +293,28 @@ jobs:
       -
         name: Checkout
         uses: actions/checkout@v2
-        with:
-          token: ${{ secrets.PAT }}
       - 
         name: Run Buildx
         uses: ilteoood/docker_buildx@1.1.0
         with:
-          tag: ${{ steps.vars.outputs.image_tag }},${{ steps.vars.outputs.image_tag }}-${{ steps.vars.outputs.tvh_build }}
-          imageName: ${{ steps.vars.outputs.dockerhub_user }}/${{ steps.vars.outputs.dockerhub_repo }}
+          tag: ${{ env.IMAGE_TAG }},${{ env.IMAGE_TAG }}-${{ steps.vars.outputs.tvh_build }}
+          imageName: ${{ env.DOCKERHUB_USER }}/${{ env.DOCKERHUB_REPO }}
           dockerFile: Dockerfile
-          buildArg: BASE_IMAGE=${{ steps.vars.outputs.image_from }}
+          buildArg: BASE_IMAGE=${{ env.IMAGE_FROM }}
           publish: true
-          platform: ${{ steps.vars.outputs.buildx_platforms }}
-          dockerUser: ${{ steps.vars.outputs.dockerhub_user }}
+          platform: linux/amd64,linux/arm/v7,linux/arm64
+          dockerUser: ${{ env.DOCKERHUB_USER }}
           dockerPassword: ${{ secrets.DOCKERHUB_PASS }}
       -
         name: Send Notification
         uses: sarisia/actions-status-discord@v1
-        if: always()
+        if: failure()
         with:
           webhook: ${{ secrets.DISCORD_WEBHOOK }}
           status: ${{ job.status }}
           description: |
-            Image: ${{ steps.vars.outputs.dockerhub_user }}/${{ steps.vars.outputs.dockerhub_repo }}
-            Tags: ${{ steps.vars.outputs.image_tag }}, ${{ steps.vars.outputs.image_tag }}-${{ steps.vars.outputs.tvh_build }}
+            Image: ${{ env.DOCKERHUB_USER }}/${{ env.DOCKERHUB_REPO }}
+            Tags: ${{ env.IMAGE_TAG }}, ${{ env.IMAGE_TAG }}-${{ steps.vars.outputs.tvh_build }}
 
   pushrm:
     needs:
@@ -373,25 +323,29 @@ jobs:
       - build-tvheadend-ubuntu
       - build-tvheadend-latest-ns
       - build-tvheadend-stable-ns
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     if: (github.event_name != 'watch') || (github.actor == github.event.repository.owner.login)
     steps:
       - 
         name: Load Variables
         id: vars
         run: |
-          echo ::set-output name=github_desc::$(curl -sX GET https://api.github.com/repos/wiserain/docker-tvheadend | jq -r .description)
+          echo ::set-output name=github_desc::$(curl -sX GET https://api.github.com/repos/${GITHUB_REPOSITORY} | jq -r .description)
       -
         name: Checkout
         uses: actions/checkout@v2
       - 
-        name: push README to Dockerhub
-        uses: christian-korneck/update-container-description-action@v1
-        env:
-          DOCKER_USER: ${{ env.DOCKERHUB_USER }}
-          DOCKER_PASS: ${{ secrets.DOCKERHUB_PASS }}
+        name: Update Dockerhub description
+        uses: peter-evans/dockerhub-description@v2
         with:
-          destination_container_repo: ${{ env.DOCKERHUB_USER }}/${{ env.DOCKERHUB_REPO }}
-          provider: dockerhub
-          short_description: ${{ steps.vars.outputs.github_desc }}
-          readme_file: 'README.md'
+          username: ${{ env.DOCKERHUB_USER }}
+          password: ${{ secrets.DOCKERHUB_PASS }}
+          repository: ${{ env.DOCKERHUB_USER }}/${{ env.DOCKERHUB_REPO }}
+          short-description: ${{ steps.vars.outputs.github_desc }}
+      -
+        name: Send Notification
+        uses: sarisia/actions-status-discord@v1
+        if: always()
+        with:
+          webhook: ${{ secrets.DISCORD_WEBHOOK }}
+          status: ${{ job.status }}
