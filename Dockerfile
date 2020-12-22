@@ -1,4 +1,4 @@
-FROM lsiobase/alpine:3.12 as buildstage
+FROM ghcr.io/linuxserver/baseimage-alpine:3.12 as buildstage
 ############## build stage ##############
 
 # package versions
@@ -58,7 +58,7 @@ RUN \
 	x265-dev \
 	zlib-dev && \
 	echo "**** setting default /usr/bin/python ****" && \
-	if [[ ! -e /usr/bin/python ]]; then ln -sf /usr/bin/python3 /usr/bin/python; fi
+	if [ ! -e /usr/bin/python ]; then ln -sf /usr/bin/python3 /usr/bin/python; fi
 
 RUN \
  echo "**** remove musl iconv.h and replace with gnu-iconv.h ****" && \
@@ -145,7 +145,7 @@ RUN \
  make DESTDIR=/tmp/comskip-build install
 
 ############## runtime stage ##############
-FROM lsiobase/alpine:3.12
+FROM ghcr.io/linuxserver/baseimage-alpine:3.12
 
 # environment settings
 ENV HOME="/config"
@@ -182,7 +182,7 @@ RUN \
 	xmltv \
 	zlib && \
  echo "**** setting default /usr/bin/python ****" && \
- if [[ ! -e /usr/bin/python ]]; then ln -sf /usr/bin/python3 /usr/bin/python; fi && \
+ if [ ! -e /usr/bin/python ]; then ln -sf /usr/bin/python3 /usr/bin/python; fi && \
  python3 -m ensurepip && \
  rm -r /usr/lib/python*/ensurepip && \
  pip3 install --no-cache --upgrade pip setuptools wheel && \
