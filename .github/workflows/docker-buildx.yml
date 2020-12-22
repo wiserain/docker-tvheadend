@@ -238,7 +238,7 @@ jobs:
     runs-on: ubuntu-20.04
     if: (github.event_name != 'watch') || (github.actor == github.event.repository.owner.login)
     env:
-      IMAGE_FROM: linuxserver/tvheadend:latest
+      IMAGE_FROM: ghcr.io/linuxserver/tvheadend:latest
       IMAGE_TAG: latest-ns
     steps:
       - 
@@ -279,7 +279,7 @@ jobs:
     runs-on: ubuntu-20.04
     if: (github.event_name != 'watch') || (github.actor == github.event.repository.owner.login)
     env:
-      IMAGE_FROM: linuxserver/tvheadend:release-4.2
+      IMAGE_FROM: ghcr.io/linuxserver/tvheadend:release-4.2
       IMAGE_TAG: stable-ns
     steps:
       - 
