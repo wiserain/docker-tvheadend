@@ -1,4 +1,4 @@
-FROM lsiobase/alpine:3.10 as buildstage
+FROM ghcr.io/linuxserver/baseimage-alpine:3.10 as buildstage
 ############## build stage ##############
 
 # package versions
@@ -148,7 +148,7 @@ RUN \
  make DESTDIR=/tmp/comskip-build install
 
 ############## runtime stage ##############
-FROM lsiobase/alpine:3.10
+FROM ghcr.io/linuxserver/baseimage-alpine:3.10
 
 # environment settings
 ENV HOME="/config"
