@@ -5,8 +5,7 @@ on:
     types: [started]
   push:
     branches:
-      - '*'
-      - '!master'
+      - 'master'
   schedule:
     - cron: "0 21 * * 5"
 
@@ -85,14 +84,14 @@ jobs:
         name: Checkout
         uses: actions/checkout@v2
         with:
-          ref: 'latest'
+          ref: 'ubuntu'
       - 
         name: Run Buildx
         uses: ilteoood/docker_buildx@1.1.0
         with:
           tag: ubuntu
           imageName: ${{ env.DOCKERHUB_USER }}/tvhbase
-          dockerFile: Dockerfile.ubuntu
+          dockerFile: Dockerfile
           publish: true
           platform: linux/amd64
           dockerUser: ${{ env.DOCKERHUB_USER }}
