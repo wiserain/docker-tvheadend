@@ -1,6 +1,6 @@
 ############## base image with libva driver ##############
 # https://gist.github.com/Brainiarc7/eb45d2e22afec7534f4a117d15fe6d89
-FROM ghcr.io/linuxserver/baseimage-ubuntu:bionic as base
+FROM ghcr.io/linuxserver/baseimage-ubuntu:focal as base
 
 ARG MAKEFLAGS="-j2"
 ARG DEBIAN_FRONTEND="noninteractive"
@@ -100,7 +100,7 @@ RUN \
   rm -rf /tmp/* /var/lib/{apt,dpkg,cache,log}/
 
 ############## build ffmpeg ##############
-# https://github.com/jrottenberg/ffmpeg/blob/master/docker-images/4.3/vaapi1804/Dockerfile
+# https://github.com/jrottenberg/ffmpeg/blob/master/docker-images/4.3/vaapi2004/Dockerfile
 FROM base as build-ffmpeg
 
 ENV         FFMPEG_VERSION=4.3.1 \
@@ -159,6 +159,7 @@ ARG         PKG_CONFIG_PATH="/opt/ffmpeg/share/pkgconfig:/opt/ffmpeg/lib/pkgconf
 ARG         PREFIX=/opt/ffmpeg
 ARG         LD_LIBRARY_PATH="/opt/ffmpeg/lib:/opt/ffmpeg/lib64"
 
+ARG DEBIAN_FRONTEND=noninteractive
 
 RUN      buildDeps="autoconf \
                     automake \
