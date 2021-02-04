@@ -1,4 +1,4 @@
-FROM ghcr.io/linuxserver/baseimage-alpine:3.10 as buildstage
+FROM ghcr.io/linuxserver/baseimage-alpine:3.12 as buildstage
 ############## build stage ##############
 
 # package versions
@@ -47,7 +47,7 @@ RUN \
 	pcre2-dev \
 	pkgconf \
 	pngquant \
-	python \
+	python2 \
 	sdl-dev \
 	tar \
 	uriparser-dev \
@@ -80,6 +80,11 @@ RUN \
  git clone https://github.com/tvheadend/tvheadend.git /tmp/tvheadend && \
  cd /tmp/tvheadend && \
  git checkout ${TVHEADEND_COMMIT} && \
+ echo "**** fix fails to build with -fno-common or gcc-10 ****" && \
+ patch -p1 -i /tmp/patches/tvheadend-4.2.8-fno-common.patch && \ 
+ echo "**** use ffmpeg>=3.4.7 to fix invalid use of av_alloc_size ****" && \
+ sed -i 's/ffmpeg-3.4.5/ffmpeg-3.4.8/g' Makefile.ffmpeg && \
+ sed -i 's/e8d0bb42513ce0761a500d8f83426fd035c3f1f9/9aafbab6ddd2d8aa3d80b779d595854441ef0c07/g' Makefile.ffmpeg && \
  ./configure \
 	`#Encoding` \
 	--$(if [ "$TARGETARCH" = "amd64" ]; then echo "en"; else echo "dis"; fi)able-ffmpeg_static \
@@ -148,7 +153,7 @@ RUN \
  make DESTDIR=/tmp/comskip-build install
 
 ############## runtime stage ##############
-FROM ghcr.io/linuxserver/baseimage-alpine:3.10
+FROM ghcr.io/linuxserver/baseimage-alpine:3.12
 
 # environment settings
 ENV HOME="/config"
@@ -173,7 +178,7 @@ RUN \
 	linux-headers \
 	opus \
 	pcre2 \
-	python \
+	python2 \
 	tar \
 	uriparser \
 	wget \
