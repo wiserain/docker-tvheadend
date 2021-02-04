@@ -6,6 +6,7 @@ on:
   push:
     branches:
       - 'master'
+  pull_request:
   schedule:
     - cron: "0 21 * * 5"
 
@@ -23,17 +24,32 @@ jobs:
         uses: actions/checkout@v2
         with:
           ref: 'latest'
-      - 
-        name: Run Buildx
-        uses: ilteoood/docker_buildx@1.1.0
+      -
+        name: Set up QEMU
+        id: qemu
+        uses: docker/setup-qemu-action@v1
         with:
-          tag: latest
-          imageName: ${{ env.DOCKERHUB_USER }}/tvhbase
-          dockerFile: Dockerfile
-          publish: true
-          platform: linux/amd64,linux/arm/v7,linux/arm64
-          dockerUser: ${{ env.DOCKERHUB_USER }}
-          dockerPassword: ${{ secrets.DOCKERHUB_PASS }}
+          image: tonistiigi/binfmt:latest
+          platforms: all
+      -
+        name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+      -
+        name: Login to DockerHub
+        uses: docker/login-action@v1 
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      -
+        name: Build and push
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          file: ./Dockerfile
+          platforms: linux/amd64,linux/arm/v7,linux/arm64
+          push: true
+          tags: |
+            ${{ env.DOCKERHUB_USER }}/tvhbase:latest
       -
         name: Send Notification
         uses: sarisia/actions-status-discord@v1
@@ -54,17 +70,32 @@ jobs:
         uses: actions/checkout@v2
         with:
           ref: 'stable'
-      - 
-        name: Run Buildx
-        uses: ilteoood/docker_buildx@1.1.0
+      -
+        name: Set up QEMU
+        id: qemu
+        uses: docker/setup-qemu-action@v1
         with:
-          tag: stable
-          imageName: ${{ env.DOCKERHUB_USER }}/tvhbase
-          dockerFile: Dockerfile
-          publish: true
-          platform: linux/amd64,linux/arm/v7,linux/arm64
-          dockerUser: ${{ env.DOCKERHUB_USER }}
-          dockerPassword: ${{ secrets.DOCKERHUB_PASS }}
+          image: tonistiigi/binfmt:latest
+          platforms: all
+      -
+        name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+      -
+        name: Login to DockerHub
+        uses: docker/login-action@v1 
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      -
+        name: Build and push
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          file: ./Dockerfile
+          platforms: linux/amd64,linux/arm/v7,linux/arm64
+          push: true
+          tags: |
+            ${{ env.DOCKERHUB_USER }}/tvhbase:stable
       -
         name: Send Notification
         uses: sarisia/actions-status-discord@v1
@@ -85,17 +116,32 @@ jobs:
         uses: actions/checkout@v2
         with:
           ref: 'ubuntu'
-      - 
-        name: Run Buildx
-        uses: ilteoood/docker_buildx@1.1.0
+      -
+        name: Set up QEMU
+        id: qemu
+        uses: docker/setup-qemu-action@v1
         with:
-          tag: ubuntu
-          imageName: ${{ env.DOCKERHUB_USER }}/tvhbase
-          dockerFile: Dockerfile
-          publish: true
-          platform: linux/amd64
-          dockerUser: ${{ env.DOCKERHUB_USER }}
-          dockerPassword: ${{ secrets.DOCKERHUB_PASS }}
+          image: tonistiigi/binfmt:latest
+          platforms: all
+      -
+        name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+      -
+        name: Login to DockerHub
+        uses: docker/login-action@v1 
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      -
+        name: Build and push
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          file: ./Dockerfile
+          platforms: linux/amd64,linux/arm/v7,linux/arm64
+          push: true
+          tags: |
+            ${{ env.DOCKERHUB_USER }}/tvhbase:ubuntu
       -
         name: Send Notification
         uses: sarisia/actions-status-discord@v1
@@ -126,18 +172,35 @@ jobs:
       -
         name: Checkout
         uses: actions/checkout@v2
-      - 
-        name: Run Buildx
-        uses: ilteoood/docker_buildx@1.1.0
+      -
+        name: Set up QEMU
+        id: qemu
+        uses: docker/setup-qemu-action@v1
         with:
-          tag: ${{ env.IMAGE_TAG }},${{ env.IMAGE_TAG }}-${{ steps.vars.outputs.tvh_build }}
-          imageName: ${{ env.DOCKERHUB_USER }}/${{ env.DOCKERHUB_REPO }}
-          dockerFile: Dockerfile
-          buildArg: BASE_IMAGE=${{ env.IMAGE_FROM }}
-          publish: true
-          platform: linux/amd64,linux/arm/v7,linux/arm64
-          dockerUser: ${{ env.DOCKERHUB_USER }}
-          dockerPassword: ${{ secrets.DOCKERHUB_PASS }}
+          image: tonistiigi/binfmt:latest
+          platforms: all
+      -
+        name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+      -
+        name: Login to DockerHub
+        uses: docker/login-action@v1 
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      -
+        name: Build and push
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          file: ./Dockerfile
+          platforms: linux/amd64,linux/arm/v7,linux/arm64
+          push: true
+          tags: |
+            ${{ env.DOCKERHUB_USER }}/${{ env.DOCKERHUB_REPO }}:${{ env.IMAGE_TAG }}
+            ${{ env.DOCKERHUB_USER }}/${{ env.DOCKERHUB_REPO }}:${{ env.IMAGE_TAG }}-${{ steps.vars.outputs.tvh_build }}
+          build-args: |
+            BASE_IMAGE=${{ env.IMAGE_FROM }}
       -
         name: Send Notification
         uses: sarisia/actions-status-discord@v1
@@ -168,18 +231,35 @@ jobs:
       -
         name: Checkout
         uses: actions/checkout@v2
-      - 
-        name: Run Buildx
-        uses: ilteoood/docker_buildx@1.1.0
+      -
+        name: Set up QEMU
+        id: qemu
+        uses: docker/setup-qemu-action@v1
         with:
-          tag: ${{ env.IMAGE_TAG }},${{ env.IMAGE_TAG }}-${{ steps.vars.outputs.tvh_build }}
-          imageName: ${{ env.DOCKERHUB_USER }}/${{ env.DOCKERHUB_REPO }}
-          dockerFile: Dockerfile
-          buildArg: BASE_IMAGE=${{ env.IMAGE_FROM }}
-          publish: true
-          platform: linux/amd64,linux/arm/v7,linux/arm64
-          dockerUser: ${{ env.DOCKERHUB_USER }}
-          dockerPassword: ${{ secrets.DOCKERHUB_PASS }}
+          image: tonistiigi/binfmt:latest
+          platforms: all
+      -
+        name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+      -
+        name: Login to DockerHub
+        uses: docker/login-action@v1 
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      -
+        name: Build and push
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          file: ./Dockerfile
+          platforms: linux/amd64,linux/arm/v7,linux/arm64
+          push: true
+          tags: |
+            ${{ env.DOCKERHUB_USER }}/${{ env.DOCKERHUB_REPO }}:${{ env.IMAGE_TAG }}
+            ${{ env.DOCKERHUB_USER }}/${{ env.DOCKERHUB_REPO }}:${{ env.IMAGE_TAG }}-${{ steps.vars.outputs.tvh_build }}
+          build-args: |
+            BASE_IMAGE=${{ env.IMAGE_FROM }}
       -
         name: Send Notification
         uses: sarisia/actions-status-discord@v1
@@ -210,18 +290,35 @@ jobs:
       -
         name: Checkout
         uses: actions/checkout@v2
-      - 
-        name: Run Buildx
-        uses: ilteoood/docker_buildx@1.1.0
+      -
+        name: Set up QEMU
+        id: qemu
+        uses: docker/setup-qemu-action@v1
         with:
-          tag: ${{ env.IMAGE_TAG }},${{ env.IMAGE_TAG }}-${{ steps.vars.outputs.tvh_build }}
-          imageName: ${{ env.DOCKERHUB_USER }}/${{ env.DOCKERHUB_REPO }}
-          dockerFile: Dockerfile.ubuntu
-          buildArg: BASE_IMAGE=${{ env.IMAGE_FROM }}
-          publish: true
-          platform: linux/amd64
-          dockerUser: ${{ env.DOCKERHUB_USER }}
-          dockerPassword: ${{ secrets.DOCKERHUB_PASS }}
+          image: tonistiigi/binfmt:latest
+          platforms: all
+      -
+        name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+      -
+        name: Login to DockerHub
+        uses: docker/login-action@v1 
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      -
+        name: Build and push
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          file: ./Dockerfile.ubuntu
+          platforms: linux/amd64,linux/arm/v7,linux/arm64
+          push: true
+          tags: |
+            ${{ env.DOCKERHUB_USER }}/${{ env.DOCKERHUB_REPO }}:${{ env.IMAGE_TAG }}
+            ${{ env.DOCKERHUB_USER }}/${{ env.DOCKERHUB_REPO }}:${{ env.IMAGE_TAG }}-${{ steps.vars.outputs.tvh_build }}
+          build-args: |
+            BASE_IMAGE=${{ env.IMAGE_FROM }}
       -
         name: Send Notification
         uses: sarisia/actions-status-discord@v1
@@ -234,6 +331,10 @@ jobs:
             Tags: ${{ env.IMAGE_TAG }}, ${{ env.IMAGE_TAG }}-${{ steps.vars.outputs.tvh_build }}
 
   build-tvheadend-latest-ns:
+    needs:
+      - build-tvhbase-latest
+      - build-tvhbase-stable
+      - build-tvhbase-ubuntu
     runs-on: ubuntu-20.04
     if: (github.event_name != 'watch') || (github.actor == github.event.repository.owner.login)
     env:
@@ -251,18 +352,35 @@ jobs:
       -
         name: Checkout
         uses: actions/checkout@v2
-      - 
-        name: Run Buildx
-        uses: ilteoood/docker_buildx@1.1.0
+      -
+        name: Set up QEMU
+        id: qemu
+        uses: docker/setup-qemu-action@v1
         with:
-          tag: ${{ env.IMAGE_TAG }},${{ env.IMAGE_TAG }}-${{ steps.vars.outputs.tvh_build }}
-          imageName: ${{ env.DOCKERHUB_USER }}/${{ env.DOCKERHUB_REPO }}
-          dockerFile: Dockerfile
-          buildArg: BASE_IMAGE=${{ env.IMAGE_FROM }}
-          publish: true
-          platform: linux/amd64,linux/arm/v7,linux/arm64
-          dockerUser: ${{ env.DOCKERHUB_USER }}
-          dockerPassword: ${{ secrets.DOCKERHUB_PASS }}
+          image: tonistiigi/binfmt:latest
+          platforms: all
+      -
+        name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+      -
+        name: Login to DockerHub
+        uses: docker/login-action@v1 
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      -
+        name: Build and push
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          file: ./Dockerfile
+          platforms: linux/amd64,linux/arm/v7,linux/arm64
+          push: true
+          tags: |
+            ${{ env.DOCKERHUB_USER }}/${{ env.DOCKERHUB_REPO }}:${{ env.IMAGE_TAG }}
+            ${{ env.DOCKERHUB_USER }}/${{ env.DOCKERHUB_REPO }}:${{ env.IMAGE_TAG }}-${{ steps.vars.outputs.tvh_build }}
+          build-args: |
+            BASE_IMAGE=${{ env.IMAGE_FROM }}
       -
         name: Send Notification
         uses: sarisia/actions-status-discord@v1
@@ -275,6 +393,10 @@ jobs:
             Tags: ${{ env.IMAGE_TAG }}, ${{ env.IMAGE_TAG }}-${{ steps.vars.outputs.tvh_build }}
 
   build-tvheadend-stable-ns:
+    needs:
+      - build-tvhbase-latest
+      - build-tvhbase-stable
+      - build-tvhbase-ubuntu
     runs-on: ubuntu-20.04
     if: (github.event_name != 'watch') || (github.actor == github.event.repository.owner.login)
     env:
@@ -292,18 +414,35 @@ jobs:
       -
         name: Checkout
         uses: actions/checkout@v2
-      - 
-        name: Run Buildx
-        uses: ilteoood/docker_buildx@1.1.0
+      -
+        name: Set up QEMU
+        id: qemu
+        uses: docker/setup-qemu-action@v1
         with:
-          tag: ${{ env.IMAGE_TAG }},${{ env.IMAGE_TAG }}-${{ steps.vars.outputs.tvh_build }}
-          imageName: ${{ env.DOCKERHUB_USER }}/${{ env.DOCKERHUB_REPO }}
-          dockerFile: Dockerfile
-          buildArg: BASE_IMAGE=${{ env.IMAGE_FROM }}
-          publish: true
-          platform: linux/amd64,linux/arm/v7,linux/arm64
-          dockerUser: ${{ env.DOCKERHUB_USER }}
-          dockerPassword: ${{ secrets.DOCKERHUB_PASS }}
+          image: tonistiigi/binfmt:latest
+          platforms: all
+      -
+        name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+      -
+        name: Login to DockerHub
+        uses: docker/login-action@v1 
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      -
+        name: Build and push
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          file: ./Dockerfile
+          platforms: linux/amd64,linux/arm/v7,linux/arm64
+          push: true
+          tags: |
+            ${{ env.DOCKERHUB_USER }}/${{ env.DOCKERHUB_REPO }}:${{ env.IMAGE_TAG }}
+            ${{ env.DOCKERHUB_USER }}/${{ env.DOCKERHUB_REPO }}:${{ env.IMAGE_TAG }}-${{ steps.vars.outputs.tvh_build }}
+          build-args: |
+            BASE_IMAGE=${{ env.IMAGE_FROM }}
       -
         name: Send Notification
         uses: sarisia/actions-status-discord@v1
