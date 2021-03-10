@@ -2,6 +2,7 @@
 ARG BASE_IMAGE
 FROM $BASE_IMAGE
 LABEL maintainer="wiserain"
+LABEL org.opencontainers.image.source https://github.com/wiserain/docker-tvheadend
 
 # default variables
 ENV UPDATE_EPG2XML="1"
