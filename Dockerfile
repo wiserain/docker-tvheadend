@@ -101,14 +101,14 @@ RUN \
   rm -rf /tmp/* /var/lib/{apt,dpkg,cache,log}/
 
 ############## build ffmpeg ##############
-# https://github.com/jrottenberg/ffmpeg/blob/master/docker-images/4.3/vaapi2004/Dockerfile
+# https://github.com/jrottenberg/ffmpeg/blob/master/docker-images/4.4/vaapi2004/Dockerfile
 FROM base as build-ffmpeg
 
-ENV         FFMPEG_VERSION=4.3.2 \
+ENV         FFMPEG_VERSION=4.4 \
             AOM_VERSION=v1.0.0 \
             FDKAAC_VERSION=0.1.5 \
             FONTCONFIG_VERSION=2.12.4 \
-            FREETYPE_VERSION=2.5.5 \
+            FREETYPE_VERSION=2.10.4 \
             FRIBIDI_VERSION=0.19.7 \
             KVAZAAR_VERSION=2.0.0 \
             LAME_VERSION=3.100 \
@@ -126,7 +126,7 @@ ENV         FFMPEG_VERSION=4.3.2 \
             VPX_VERSION=1.8.0 \
             WEBP_VERSION=1.0.2 \
             X264_VERSION=20170226-2245-stable \
-            X265_VERSION=3.1.1 \
+            X265_VERSION=3.4 \
             XAU_VERSION=1.0.9 \
             XORG_MACROS_VERSION=1.19.2 \
             XPROTO_VERSION=7.0.31 \
@@ -137,9 +137,10 @@ ENV         FFMPEG_VERSION=4.3.2 \
             LIBSRT_VERSION=1.4.1 \
             LIBARIBB24_VERSION=1.0.3 \
             LIBPNG_VERSION=1.6.9 \
+            LIBVMAF_VERSION=2.1.1 \
             SRC=/usr/local
 
-ARG         FREETYPE_SHA256SUM="5d03dd76c2171a7601e9ce10551d52d4471cf92cd205948e60289251daddffa8 freetype-2.5.5.tar.gz"
+ARG         FREETYPE_SHA256SUM="5eab795ebb23ac77001cfb68b7d4d50b5d6c7469247b0b01b2c953269f658dac freetype-2.10.4.tar.gz"
 ARG         FRIBIDI_SHA256SUM="3fc96fa9473bd31dcb5500bdf1aa78b337ba13eb8c301e7c28923fea982453a8 0.19.7.tar.gz"
 ARG         LIBASS_SHA256SUM="8fadf294bf701300d4605e6f1d92929304187fca4b8d8a47889315526adbafd7 0.13.7.tar.gz"
 ARG         LIBVIDSTAB_SHA256SUM="14d2a053e56edad4f397be0cb3ef8eb1ec3150404ce99a426c4eb641861dc0bb v1.1.0.tar.gz"
@@ -152,6 +153,7 @@ ARG         LIBXML2_SHA256SUM="f07dab13bf42d2b8db80620cce7419b3b87827cc937c8bb20
 ARG         LIBBLURAY_SHA256SUM="a3dd452239b100dc9da0d01b30e1692693e2a332a7d29917bf84bb10ea7c0b42 libbluray-1.1.2.tar.bz2"
 ARG         LIBZMQ_SHA256SUM="02ecc88466ae38cf2c8d79f09cfd2675ba299a439680b64ade733e26a349edeb v4.3.2.tar.gz"
 ARG         LIBARIBB24_SHA256SUM="f61560738926e57f9173510389634d8c06cabedfa857db4b28fb7704707ff128 v1.0.3.tar.gz"
+ARG         LIBVMAF_SHA256SUM="e7fc00ae1322a7eccfcf6d4f1cdf9c67eec8058709887c8c6c3795c617326f77 v2.1.1.tar.gz"
 
 
 ARG         LD_LIBRARY_PATH=/opt/ffmpeg/lib
@@ -159,6 +161,7 @@ ARG         MAKEFLAGS="-j2"
 ARG         PKG_CONFIG_PATH="/opt/ffmpeg/share/pkgconfig:/opt/ffmpeg/lib/pkgconfig:/opt/ffmpeg/lib64/pkgconfig"
 ARG         PREFIX=/opt/ffmpeg
 ARG         LD_LIBRARY_PATH="/opt/ffmpeg/lib:/opt/ffmpeg/lib64"
+
 
 ARG DEBIAN_FRONTEND=noninteractive
 
@@ -174,6 +177,7 @@ RUN      buildDeps="autoconf \
                     gperf \
                     libtool \
                     make \
+                    meson \
                     nasm \
                     perl \
                     pkg-config \
@@ -184,6 +188,26 @@ RUN      buildDeps="autoconf \
                     zlib1g-dev" && \
         apt-get -yqq update && \
         apt-get install -yq --no-install-recommends ${buildDeps}
+## libvmaf https://github.com/Netflix/vmaf
+RUN \
+        if which meson || false; then \
+                echo "Building VMAF." && \
+                DIR=/tmp/vmaf && \
+                mkdir -p ${DIR} && \
+                cd ${DIR} && \
+                curl -sLO https://github.com/Netflix/vmaf/archive/v${LIBVMAF_VERSION}.tar.gz && \
+                tar -xz --strip-components=1 -f v${LIBVMAF_VERSION}.tar.gz && \
+                cd /tmp/vmaf/libvmaf && \
+                meson build --buildtype release --prefix=${PREFIX} && \
+                ninja -vC build && \
+                ninja -vC build install && \
+                mkdir -p ${PREFIX}/share/model/ && \
+                cp -r /tmp/vmaf/model/* ${PREFIX}/share/model/ && \
+                rm -rf ${DIR}; \
+        else \
+                echo "VMAF skipped."; \
+        fi
+
 ## opencore-amr https://sourceforge.net/projects/opencore-amr/
 RUN \
         DIR=/tmp/opencore-amr && \
@@ -211,9 +235,9 @@ RUN \
         DIR=/tmp/x265 && \
         mkdir -p ${DIR} && \
         cd ${DIR} && \
-        curl -sL https://download.videolan.org/pub/videolan/x265/x265_${X265_VERSION}.tar.gz  | \
+        curl -sL https://github.com/videolan/x265/archive/refs/tags/${X265_VERSION}.tar.gz | \
         tar -zx && \
-        cd x265_${X265_VERSION}/build/linux && \
+        cd x265-${X265_VERSION}/build/linux && \
         sed -i "/-DEXTRA_LIB/ s/$/ -DCMAKE_INSTALL_PREFIX=\${PREFIX}/" multilib.sh && \
         sed -i "/^cmake/ s/$/ -DENABLE_CLI=OFF/" multilib.sh && \
         ./multilib.sh && \
@@ -622,6 +646,7 @@ RUN \
         --extra-libs=-lpthread \
         --enable-libsrt \
         --enable-libaribb24 \
+        --enable-libvmaf \
         --enable-vaapi \
         --extra-cflags="-I${PREFIX}/include" \
         --extra-ldflags="-L${PREFIX}/lib" && \
