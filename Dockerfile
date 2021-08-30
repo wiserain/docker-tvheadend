@@ -42,7 +42,6 @@ RUN \
 	libxslt-dev \
 	linux-headers \
 	make \
-	$(if [ "$TARGETARCH" = "amd64" ]; then echo "mesa-dri-ati"; else echo ''; fi) \
 	openssl-dev \
 	opus-dev \
 	patch \
@@ -166,6 +165,8 @@ RUN \
 	libssl1.1 \
 	libva \
 	$(if [ "$TARGETARCH" = "amd64" ]; then echo "libva-intel-driver"; else echo ''; fi) \
+	$(if [ "$TARGETARCH" = "amd64" ]; then echo "intel-media-driver"; else echo ''; fi) \
+	$(if [ "$TARGETARCH" = "amd64" ]; then echo "mesa-dri-ati"; else echo ''; fi) \
 	libvpx \
 	libxml2 \
 	libxslt \
