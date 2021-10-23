@@ -85,6 +85,9 @@ RUN \
  echo "**** use ffmpeg>=3.4.7 to fix invalid use of av_alloc_size ****" && \
  sed -i 's/ffmpeg-3.4.5/ffmpeg-3.4.8/g' Makefile.ffmpeg && \
  sed -i 's/e8d0bb42513ce0761a500d8f83426fd035c3f1f9/9aafbab6ddd2d8aa3d80b779d595854441ef0c07/g' Makefile.ffmpeg && \
+ echo "**** use libhdhomerun > 20171221 as it seems deleted from server ****" && \
+ sed -i 's/libhdhomerun_20171221/libhdhomerun_20180327/g' Makefile.hdhomerun && \
+ sed -i 's/6b019728eadea3af7a5686ed5ba44e970bca7365/a6b0ce4a8b5ea103a9de2d1d9cada4b36e13c74f/g' Makefile.hdhomerun && \
  ./configure \
 	`#Encoding` \
 	--$(if [ "$TARGETARCH" = "amd64" ]; then echo "en"; else echo "dis"; fi)able-ffmpeg_static \
