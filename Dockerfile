@@ -5,9 +5,10 @@ LABEL maintainer="wiserain"
 LABEL org.opencontainers.image.source https://github.com/wiserain/docker-tvheadend
 
 # default variables
-ENV UPDATE_EPG2XML="1"
-ENV UPDATE_CHANNEL="1"
-ENV TZ="Asia/Seoul"
+ENV TZ="Asia/Seoul" \
+	EPG2XML_CONFIG="/epg2xml/epg2xml.json" \
+	EPG2XML_CHANNELFILE="/epg2xml/Channel.json" \
+	EPG2XML_XMLFILE="/epg2xml/xml/xmltv.xml"
 
 # copy local files
 COPY root/ /

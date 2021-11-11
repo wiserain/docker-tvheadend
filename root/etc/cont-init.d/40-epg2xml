@@ -1,46 +1,34 @@
 #!/usr/bin/with-contenv bash
+set -e
 
-tmpdir=$(mktemp -d)
+APP_ROOT="/opt/epg2xml"
 
-# prepare epg2xml
-EPG2XML_GIT="https://github.com/${EPG2XML_FROM:-wiserain}/epg2xml.git"
-if ! (git clone --quiet "${EPG2XML_GIT}" > /dev/null ${tmpdir}); then
-	echo "ERROR: Invalid repository url for epg2xml"
-	echo "ERROR: ${EPG2XML_GIT}"
-	exit 1
-fi
+git_pull() {
+  if [ $# -lt 1 ]; then return 1; fi
+  if [ -z "${1}" ] || [ ! -d "${1}" ]; then return 1; fi
+  if [ "$(git -C "${1}" rev-parse --is-inside-work-tree 2>/dev/null)" = "true" ]; then
+    git_dir=$(git -C "${1}" rev-parse --absolute-git-dir 2>/dev/null)
+    find "${git_dir}" -name "index.lock" -exec rm -f {} \;
+    git_repo=$(git -C "${1}" config --get remote.origin.url 2>/dev/null | cut -d/ -f4-)
+    echo "*** checking for updates: ${git_repo%%.git}"
+    git -C "${1}" reset --quiet --hard HEAD
+    RESP=$(git -C "${1}" pull 2>&1 |tee /dev/null; exit ${PIPESTATUS[0]})
+    if ! echo "$RESP" | grep -q "up to date"; then echo -e "$RESP" | ( TAB=$'    ' ; sed "s/^/$TAB/" ); fi
+  else
+    return 1
+  fi
+}
 
-if [[ ! -z "${EPG2XML_VER}" ]] && [[ -d "${tmpdir}/.git" ]]; then
-	echo " INFO: Checking out to \"${EPG2XML_VER}\""
-	cd ${tmpdir} && git checkout "${EPG2XML_VER}"
-fi
+git_pull "${APP_ROOT}" || \
+    {
+        echo "*** installing epg2xml"
+        rm -rf "${APP_ROOT}" && \
+            git -C "$(dirname "${APP_ROOT}")" clone --quiet --depth 1 \
+                https://github.com/epg2xml/epg2xml.git > /dev/null
+    }
 
-# make folder
-[[ ! -d "/epg2xml/xml" ]] && mkdir /epg2xml/xml
-
-# install epg2xml.py
-if [[ "${UPDATE_EPG2XML}" == "1" ]] || [[ ! -f "/epg2xml/epg2xml.py" ]]; then
-	echo "Installing epg2xml.py ..."
-	mv ${tmpdir}/epg2xml.py /epg2xml/ 2>/dev/null
-else
-	echo "Using existing epg2xml.py. Skipping installation ..."
-fi
-
-# install epg2xml.json as well if not exist
-if [[ ! -f /epg2xml/epg2xml.json ]]; then
-	echo "Installing epg2xml.json ..."
-	mv ${tmpdir}/epg2xml.json /epg2xml/ 2>/dev/null
-else
-	echo "Using existing epg2xml.json. Skipping installation ..."
-fi
-
-# update Channel.json
-if [[ ! -f /epg2xml/Channel.json ]] || [[ "${UPDATE_CHANNEL}" == "1" ]]; then
-	echo "Installing Channel.json ..."
-	mv ${tmpdir}/Channel.json /epg2xml/ 2>/dev/null
-else
-	echo "Using existing Channel.json. Skipping installation ..."
-fi
+mkdir -p \
+	/epg2xml/xml
 
 # permissions
 chown -R abc:abc \

@@ -5,8 +5,8 @@ vflag=
 cflag=
 if [ $# = 0 ]
 then
-    python3 -u /epg2xml/epg2xml.py -i SK -o /epg2xml/xml/xmltv.xml
-    cat /epg2xml/xml/xmltv.xml
+    PYTHONPATH=/opt/epg2xml python -m epg2xml run
+    [ -f /epg2xml/xml/xmltv.xml ] && cat /epg2xml/xml/xmltv.xml
     exit 0
 fi
 
@@ -45,7 +45,7 @@ then
 fi
 if [ "$vflag" ]
 then
-   printf "1.0\n"
+   printf "2.0\n"
 fi
 if [ "$cflag" ]
 then
