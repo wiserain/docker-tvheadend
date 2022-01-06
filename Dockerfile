@@ -1,4 +1,5 @@
-FROM ghcr.io/linuxserver/baseimage-alpine:3.12 as buildstage
+FROM ghcr.io/linuxserver/baseimage-alpine:3.12 as baseimage
+FROM baseimage as buildstage
 ############## build stage ##############
 
 # package versions
@@ -95,6 +96,7 @@ RUN \
 	\
 	`#Options` \
 	--disable-bintray_cache \
+	--disable-execinfo \
 	--enable-bundle \
 	--enable-dvbcsa \
 	--enable-hdhomerun_static \
@@ -107,6 +109,7 @@ RUN \
 	--localstatedir=/var \
 	--mandir=/usr/share/man \
 	--prefix=/usr \
+	--python=python3 \
 	--sysconfdir=/config && \
  make && \
  make DESTDIR=/tmp/tvheadend-build install
@@ -144,7 +147,7 @@ RUN \
  make DESTDIR=/tmp/comskip-build install
 
 ############## runtime stage ##############
-FROM ghcr.io/linuxserver/baseimage-alpine:3.12
+FROM baseimage
 
 # environment settings
 ENV HOME="/config"
