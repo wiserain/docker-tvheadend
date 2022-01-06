@@ -1,4 +1,5 @@
-FROM ghcr.io/linuxserver/baseimage-alpine:3.12 as buildstage
+FROM ghcr.io/linuxserver/baseimage-alpine:3.12 as baseimage
+FROM baseimage as buildstage
 ############## build stage ##############
 
 # package versions
@@ -47,14 +48,16 @@ RUN \
 	pcre2-dev \
 	pkgconf \
 	pngquant \
-	python2 \
+	py3-requests \
 	sdl-dev \
 	tar \
 	uriparser-dev \
 	wget \
 	x264-dev \
 	x265-dev \
-	zlib-dev
+	zlib-dev && \
+	echo "**** setting default /usr/bin/python ****" && \
+	if [ ! -e /usr/bin/python ]; then ln -sf /usr/bin/python3 /usr/bin/python; fi
 
 RUN \
  echo "**** remove musl iconv.h and replace with gnu-iconv.h ****" && \
@@ -119,6 +122,7 @@ RUN \
 	--localstatedir=/var \
 	--mandir=/usr/share/man \
 	--prefix=/usr \
+	--python=python3 \
 	--sysconfdir=/config && \
  make && \
  make DESTDIR=/tmp/tvheadend-build install
@@ -156,7 +160,7 @@ RUN \
  make DESTDIR=/tmp/comskip-build install
 
 ############## runtime stage ##############
-FROM ghcr.io/linuxserver/baseimage-alpine:3.12
+FROM baseimage
 
 # environment settings
 ENV HOME="/config"
@@ -181,7 +185,7 @@ RUN \
 	linux-headers \
 	opus \
 	pcre2 \
-	python2 \
+	py3-requests \
 	tar \
 	uriparser \
 	wget \
@@ -189,6 +193,11 @@ RUN \
 	x265 \
 	xmltv \
 	zlib && \
+ echo "**** setting default /usr/bin/python ****" && \
+ if [ ! -e /usr/bin/python ]; then ln -sf /usr/bin/python3 /usr/bin/python; fi && \
+ python3 -m ensurepip && \
+ rm -r /usr/lib/python*/ensurepip && \
+ pip3 install --no-cache --upgrade pip setuptools wheel && \
  echo "**** Add Picons ****" && \
  mkdir -p /picons && \
  curl -o \
