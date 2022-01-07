@@ -1,4 +1,4 @@
-FROM ghcr.io/linuxserver/baseimage-alpine:3.12 as baseimage
+FROM ghcr.io/linuxserver/baseimage-alpine:3.15 as baseimage
 FROM baseimage as buildstage
 ############## build stage ##############
 
@@ -120,6 +120,7 @@ RUN \
 	--infodir=/usr/share/info \
 	--localstatedir=/var \
 	--mandir=/usr/share/man \
+	$(if [ "$TARGETARCH" = "arm" ]; then echo "--nowerror"; fi)  \
 	--prefix=/usr \
 	--python=python3 \
 	--sysconfdir=/config && \
