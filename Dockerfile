@@ -18,7 +18,7 @@ RUN \
 	chmod 555 /usr/bin/tv_grab_* && \
 	echo "**** remove irrelevant grabbers ****" && \
 	xargs rm -f < /tmp/tv_grab_irr.list && \
-	echo "install dependencies for epg2xml" && \
+	echo "**** install dependencies for epg2xml" && \
 	apk add --no-cache \
 		git \
 		jq \
