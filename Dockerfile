@@ -781,7 +781,7 @@ RUN \
   echo "***** compile comskip ****" && \
   apt-get install -yq --no-install-recommends \
     libargtable2-dev && \
-  git clone git://github.com/erikkaashoek/Comskip /tmp/comskip && \
+  git clone https://github.com/erikkaashoek/Comskip /tmp/comskip && \
   cd /tmp/comskip && \
   ./autogen.sh && \
   ./configure \
