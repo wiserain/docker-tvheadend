@@ -150,7 +150,7 @@ RUN \
 
 RUN \
  echo "***** compile comskip ****" && \
- git clone git://github.com/erikkaashoek/Comskip /tmp/comskip && \
+ git clone https://github.com/erikkaashoek/Comskip /tmp/comskip && \
  cd /tmp/comskip && \
  ./autogen.sh && \
  ./configure \
