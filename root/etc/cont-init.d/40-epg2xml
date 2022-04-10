@@ -1,31 +1,8 @@
 #!/usr/bin/with-contenv bash
 set -e
 
-APP_ROOT="/opt/epg2xml"
-
-git_pull() {
-  if [ $# -lt 1 ]; then return 1; fi
-  if [ -z "${1}" ] || [ ! -d "${1}" ]; then return 1; fi
-  if [ "$(git -C "${1}" rev-parse --is-inside-work-tree 2>/dev/null)" = "true" ]; then
-    git_dir=$(git -C "${1}" rev-parse --absolute-git-dir 2>/dev/null)
-    find "${git_dir}" -name "index.lock" -exec rm -f {} \;
-    git_repo=$(git -C "${1}" config --get remote.origin.url 2>/dev/null | cut -d/ -f4-)
-    echo "*** checking for updates: ${git_repo%%.git}"
-    git -C "${1}" reset --quiet --hard HEAD
-    RESP=$(git -C "${1}" pull 2>&1 |tee /dev/null; exit ${PIPESTATUS[0]})
-    if ! echo "$RESP" | grep -q "up to date"; then echo -e "$RESP" | ( TAB=$'    ' ; sed "s/^/$TAB/" ); fi
-  else
-    return 1
-  fi
-}
-
-git_pull "${APP_ROOT}" || \
-    {
-        echo "*** installing epg2xml"
-        rm -rf "${APP_ROOT}" && \
-            git -C "$(dirname "${APP_ROOT}")" clone --quiet --depth 1 \
-                https://github.com/epg2xml/epg2xml.git > /dev/null
-    }
+[ ! -f "${EPG2XML_CONFIG}" ] && \
+	epg2xml run > /dev/null 2>&1
 
 mkdir -p \
 	/epg2xml/xml
@@ -33,6 +10,3 @@ mkdir -p \
 # permissions
 chown -R abc:abc \
 	/epg2xml
-
-# cleanup
-rm -rf /tmp/*

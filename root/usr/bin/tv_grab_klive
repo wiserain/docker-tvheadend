@@ -9,12 +9,12 @@ do
     delim=""
     case "$arg" in
     #translate --gnu-long-options to -g (short options)
-       --description) printf "%s\n" "$DESC";;
-       --version) printf "%s\n" "$VER";;
-       --capabilities) printf "%s\n" "$CAP";;
-       -d) shift;;
-       #pass through anything else
-       *) args="${args} ${arg}";;
+      --description) printf "%s\n" "$DESC";;
+      --version) printf "%s\n" "$VER";;
+      --capabilities) printf "%s\n" "$CAP";;
+      -d) shift;;
+      #pass through anything else
+      *) args="${args} ${arg}";;
     esac
 done
 

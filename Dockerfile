@@ -27,6 +27,9 @@ RUN \
 		py3-lxml \
 		py3-requests \
 		perl-xml-twig && \
+	echo "**** install epg2xml ****" && \
+	EPG2XML_VER=$(wget --no-check-certificate -O - -o /dev/null "https://api.github.com/repos/epg2xml/epg2xml/releases/latest" | awk '/tag_name/{print $4;exit}' FS='[""]') && \
+	python3 -m pip install "epg2xml[lxml] @ git+https://github.com/epg2xml/epg2xml.git@${EPG2XML_VER}" && \
 	echo "**** cleanup ****" && \
 	rm -rf /var/cache/apk/* && \
 		rm -rf /tmp/*

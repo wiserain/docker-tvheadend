@@ -5,8 +5,8 @@ vflag=
 cflag=
 if [ $# = 0 ]
 then
-    PYTHONPATH=/opt/epg2xml python -m epg2xml run
-    [ -f /epg2xml/xml/xmltv.xml ] && cat /epg2xml/xml/xmltv.xml
+    epg2xml run
+    [ -f "${EPG2XML_XMLFILE}" ] && cat "${EPG2XML_XMLFILE}"
     exit 0
 fi
 
@@ -15,12 +15,12 @@ do
     delim=""
     case "$arg" in
     #translate --gnu-long-options to -g (short options)
-       --description) args="${args}-d ";;
-       --version) args="${args}-v ";;
-       --capabilities) args="${args}-c ";;
-       #pass through anything else
-       *) [[ "${arg:0:1}" == "-" ]] || delim="\""
-           args="${args}${delim}${arg}${delim} ";;
+        --description) args="${args}-d ";;
+        --version) args="${args}-v ";;
+        --capabilities) args="${args}-c ";;
+        #pass through anything else
+        *) [[ "${arg:0:1}" == "-" ]] || delim="\""
+            args="${args}${delim}${arg}${delim} ";;
     esac
 done
 
@@ -41,15 +41,15 @@ done
 
 if [ "$dflag" ]
 then
-   printf "Korea (SK)"
+    printf "Korea (SK)"
 fi
 if [ "$vflag" ]
 then
-   printf "2.0\n"
+    printf "2.1\n"
 fi
 if [ "$cflag" ]
 then
-   printf "baseline\n"
+    printf "baseline\n"
 fi
 
 exit 0
