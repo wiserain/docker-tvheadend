@@ -101,10 +101,10 @@ RUN \
   rm -rf /tmp/* /var/lib/{apt,dpkg,cache,log}/
 
 ############## build ffmpeg ##############
-# https://github.com/jrottenberg/ffmpeg/blob/master/docker-images/4.4/vaapi2004/Dockerfile
+# https://github.com/jrottenberg/ffmpeg/blob/main/docker-images/5.0/vaapi2004/Dockerfile
 FROM base as build-ffmpeg
 
-ENV         FFMPEG_VERSION=4.4.1 \
+ENV         FFMPEG_VERSION=5.0.1 \
     AOM_VERSION=v1.0.0 \
     CHROMAPRINT_VERSION=1.5.0 \
     FDKAAC_VERSION=0.1.5 \
@@ -615,7 +615,6 @@ RUN  \
         --disable-debug \
         --disable-doc \
         --disable-ffplay \
-        --enable-avresample \
         --enable-fontconfig \
         --enable-gpl \
         --enable-libaom \
