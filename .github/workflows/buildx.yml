@@ -5,6 +5,7 @@ on:
     branches:
       - 'ubuntu'
   pull_request:
+  workflow_dispatch:
 
 env:
   DOCKERHUB_USER: wiserain
@@ -13,33 +14,43 @@ env:
 jobs:
   build-tvhbase-ubuntu:
     runs-on: ubuntu-20.04
-    if: (github.event_name != 'watch') || (github.actor == github.event.repository.owner.login)
     steps:
       -
         name: Checkout
         uses: actions/checkout@v3
       -
         name: Set up QEMU
-        uses: docker/setup-qemu-action@v1
+        uses: docker/setup-qemu-action@v2
       -
         name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v1
+        uses: docker/setup-buildx-action@v2
+      -
+        name: Initial Buildx
+        uses: docker/build-push-action@v3
+        with:
+          context: .
+          file: Dockerfile
+          tags: ${{ env.IMAGE_NAME }}:testing
+          platforms: linux/amd64
       -
         name: Login to docker.io
-        uses: docker/login-action@v1 
+        uses: docker/login-action@v2
+        if: github.actor == github.event.repository.owner.login
         with:
           username: ${{ env.DOCKERHUB_USER }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
       -
         name: Login to ghcr.io
-        uses: docker/login-action@v1 
+        uses: docker/login-action@v2
+        if: github.actor == github.event.repository.owner.login
         with:
           registry: ghcr.io
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GHCR_PAT }}
       -
         name: Buildx and Push
-        uses: docker/build-push-action@v2
+        uses: docker/build-push-action@v3
+        if: github.actor == github.event.repository.owner.login
         with:
           context: .
           file: ./Dockerfile
@@ -51,7 +62,7 @@ jobs:
       -
         name: Send Notification
         uses: sarisia/actions-status-discord@v1
-        if: failure()
+        if: failure() && github.actor == github.event.repository.owner.login
         with:
           webhook: ${{ secrets.DISCORD_WEBHOOK }}
           status: ${{ job.status }}
