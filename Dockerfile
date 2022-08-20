@@ -1,17 +1,22 @@
-FROM ghcr.io/linuxserver/baseimage-alpine:3.15 as baseimage
-FROM baseimage as buildstage
-############## build stage ##############
+FROM ghcr.io/linuxserver/baseimage-alpine:3.15 AS base
 
-# package versions
-ARG ARGTABLE_VER="2.13"
+############## tvheadend ##############
+FROM base AS tvheadend
 
 # environment settings
-ARG MAKEFLAGS="-j2"
 ARG TARGETARCH
 ARG TVHEADEND_COMMIT
 
-# copy patches
-COPY patches/ /tmp/patches/
+RUN \
+ echo "**** tvheadend source ****" && \
+ apk add --no-cache git jq && \
+ if [ -z ${TVHEADEND_COMMIT+x} ]; then \
+	TVHEADEND_COMMIT=$(curl -sX GET https://api.github.com/repos/tvheadend/tvheadend/commits/master \
+	| jq -r '. | .sha'); \
+ fi && \
+ git clone https://github.com/tvheadend/tvheadend.git /tmp/tvheadend && \
+ cd /tmp/tvheadend && \
+ git checkout ${TVHEADEND_COMMIT}
 
 RUN \
  echo "**** install build packages ****" && \
@@ -65,17 +70,9 @@ RUN \
  rm -rf /usr/include/iconv.h && \
  cp /usr/include/gnu-libiconv/iconv.h /usr/include/iconv.h
 
+WORKDIR /tmp/tvheadend
 RUN \
  echo "**** compile tvheadend ****" && \
- if [ -z ${TVHEADEND_COMMIT+x} ]; then \
-	TVHEADEND_COMMIT=$(curl -sX GET https://api.github.com/repos/tvheadend/tvheadend/commits/master \
-	| jq -r '. | .sha'); \
- fi && \
- mkdir -p \
-	/tmp/tvheadend && \
- git clone https://github.com/tvheadend/tvheadend.git /tmp/tvheadend && \
- cd /tmp/tvheadend && \
- git checkout ${TVHEADEND_COMMIT} && \
  ./configure \
 	`#Encoding` \
 	--$(if [ "$TARGETARCH" = "amd64" ]; then echo "en"; else echo "dis"; fi)able-ffmpeg_static \
@@ -112,43 +109,89 @@ RUN \
 	--prefix=/usr \
 	--python=python3 \
 	--sysconfdir=/config && \
- make && \
- make DESTDIR=/tmp/tvheadend-build install
+ make -j$(nproc) && \
+ make DESTDIR=/tvheadend install
+
+############## argtable ##############
+FROM base AS argtable
+
+# package versions
+ARG ARGTABLE_VER="2.13"
 
 RUN \
- echo "**** compile argtable2 ****" && \
+ echo "**** argtable2 source ****" && \
  ARGTABLE_VER1="${ARGTABLE_VER//./-}" && \
  mkdir -p \
 	/tmp/argtable && \
  curl -o \
  /tmp/argtable-src.tar.gz -L \
 	"https://sourceforge.net/projects/argtable/files/argtable/argtable-${ARGTABLE_VER}/argtable${ARGTABLE_VER1}.tar.gz" && \
- tar xf \
- /tmp/argtable-src.tar.gz -C \
-	/tmp/argtable --strip-components=1 && \
- cp /tmp/patches/config.* /tmp/argtable && \
- cd /tmp/argtable && \
- ./configure \
-	--prefix=/usr && \
- make && \
- make check && \
- make DESTDIR=/tmp/argtable-build install && \
- echo "**** copy to /usr for comskip dependency ****" && \
- cp -pr /tmp/argtable-build/usr/* /usr/
+ tar xf /tmp/argtable-src.tar.gz \
+    -C /tmp/argtable \
+	--strip-components=1
+
+# copy patches
+COPY patches/config.* /tmp/argtable/
 
 RUN \
+ echo "**** install build packages ****" && \
+ apk add --no-cache \
+	build-base
+
+WORKDIR /tmp/argtable
+RUN \
+ echo "**** compile argtable2 ****" && \
+ ./configure \
+	--prefix=/usr && \
+ make -j$(nproc) && \
+ make check && \
+ make DESTDIR=/argtable install
+
+############# comskip ##############
+FROM base AS comskip
+
+RUN \
+ echo "***** comskip source ****" && \
+ apk add --no-cache git && \
+ git clone https://github.com/erikkaashoek/Comskip /tmp/comskip --depth=1
+
+RUN \
+ echo "**** install build packages ****" && \
+ apk add --no-cache \
+	autoconf \
+	automake \
+	build-base \
+	ffmpeg-dev \
+	libtool \
+	pkgconf
+
+# copy deps
+COPY --from=argtable /argtable/usr/ /usr/
+
+WORKDIR /tmp/comskip
+RUN \
  echo "***** compile comskip ****" && \
- git clone https://github.com/erikkaashoek/Comskip /tmp/comskip && \
- cd /tmp/comskip && \
  ./autogen.sh && \
  ./configure \
 	--bindir=/usr/bin \
 	--sysconfdir=/config/comskip && \
- make && \
- make DESTDIR=/tmp/comskip-build install
+ make -j$(nproc) && \
+ make DESTDIR=/comskip install
+
+############## collect stage ##############
+FROM base AS collector
+
+COPY --from=tvheadend /tvheadend/usr/ /bar/usr/
+COPY --from=argtable /argtable/usr/lib/ /bar/usr/lib/
+COPY --from=comskip /comskip/usr/ /bar/usr/
+
+COPY --from=ghcr.io/linuxserver/picons-builder /picons.tar.bz2 /picons.tar.bz2
+RUN mkdir -p /bar/picons && tar xf /picons.tar.bz2 -C /bar/picons
+
+COPY root/ /bar/
 
 ############## runtime stage ##############
-FROM baseimage
+FROM base
 
 # environment settings
 ENV HOME="/config"
@@ -190,18 +233,10 @@ RUN \
  if [ ! -e /usr/bin/python ]; then ln -sf /usr/bin/python3 /usr/bin/python; fi && \
  python3 -m ensurepip && \
  rm -r /usr/lib/python*/ensurepip && \
- pip3 install --no-cache --upgrade pip setuptools wheel && \
- echo "**** Add Picons ****" && \
- mkdir -p /picons && \
- curl -o \
-	/picons.tar.bz2 -L \
-	https://lsio-ci.ams3.digitaloceanspaces.com/picons/picons.tar.bz2
+ pip3 install --no-cache --upgrade pip setuptools wheel
 
 # copy local files and buildstage artifacts
-COPY --from=buildstage /tmp/argtable-build/usr/ /usr/
-COPY --from=buildstage /tmp/comskip-build/usr/ /usr/
-COPY --from=buildstage /tmp/tvheadend-build/usr/ /usr/
-COPY root/ /
+COPY --from=collector /bar/ /
 
 # ports and volumes
 EXPOSE 9981 9982
