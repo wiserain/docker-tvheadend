@@ -96,13 +96,16 @@ RUN \
     libxext6 \
     libxfixes3 \
     libdrm-intel1 && \
-  apt-get clean autoclean && \
   apt-get autoremove -y && \
-  rm -rf /tmp/* /var/lib/{apt,dpkg,cache,log}/
+  rm -rf \
+    /tmp/* \
+    /var/tmp/* \
+    /var/cache/* \
+    /var/lib/apt/lists/*
 
 ############## build ffmpeg ##############
 # https://github.com/jrottenberg/ffmpeg/blob/main/docker-images/4.4/vaapi2004/Dockerfile
-FROM base as build-ffmpeg
+FROM base as ffmpeg
 
 ENV         FFMPEG_VERSION=4.4.2 \
     AOM_VERSION=v1.0.0 \
@@ -675,8 +678,31 @@ RUN \
           sed "s:${PREFIX}:/usr/local:g" <"$pc" >/usr/local/lib/pkgconfig/"${pc##*/}"; \
         done
 
-############## build tvheadend ##############
-FROM base as build-tvheadend
+############## libiconv ##############
+FROM base AS libiconv
+
+RUN \
+  echo "**** install basic build tools ****" && \
+  apt-get update -yq && \
+  apt-get install -yq --no-install-recommends \
+    build-essential \
+	wget
+
+RUN \
+  echo "**** libiconv source ****" && \
+  wget https://ftp.gnu.org/pub/gnu/libiconv/libiconv-1.16.tar.gz -P /tmp/ && \
+  mkdir -p /tmp/libiconv && \
+  tar -C /tmp/libiconv -xzf /tmp/libiconv-1.16.tar.gz --strip-components=1
+
+WORKDIR /tmp/libiconv
+RUN \
+  echo "**** compile libiconv ****" && \
+  ./configure && \
+  make VERBOSE=1 && \
+  make DESTDIR=/libiconv install
+
+############## tvheadend ##############
+FROM base AS tvheadend
 
 ARG MAKEFLAGS="-j2"
 ARG DEBIAN_FRONTEND="noninteractive"
@@ -693,18 +719,20 @@ RUN \
     jq \
     libtool \
     pkg-config \
-    wget && \
-  echo "**** compile libiconv ****" && \
-  wget https://ftp.gnu.org/pub/gnu/libiconv/libiconv-1.16.tar.gz -P /tmp/ && \
-  cd /tmp && \
-  tar -xzf libiconv-1.16.tar.gz && \
-  cd libiconv-1.16 && \
-  ./configure && \
-  make VERBOSE=1 && \
-  make DESTDIR=/tmp/libiconv-build install && \
-  echo "**** copy to /usr for dependency ****" && \
-  cp -pr /tmp/libiconv-build/usr/* /usr/ && \
-  echo "**** compile tvheadend ****" && \
+    wget
+
+RUN \
+ echo "**** tvheadend source ****" && \
+ if [ -z ${TVHEADEND_COMMIT+x} ]; then \
+	TVHEADEND_COMMIT=$(curl -sX GET https://api.github.com/repos/tvheadend/tvheadend/commits/master \
+	| jq -r '. | .sha'); \
+ fi && \
+ git clone https://github.com/tvheadend/tvheadend.git /tmp/tvheadend && \
+ cd /tmp/tvheadend && \
+ git checkout ${TVHEADEND_COMMIT}
+
+RUN \
+  echo "**** install build-deps ****" && \
   apt-get install -yq --no-install-recommends \
     bzip2 \
     ca-certificates \
@@ -741,14 +769,14 @@ RUN \
     libswresample-dev \
     libswscale-dev && \
   echo "**** setting default /usr/bin/python ****" && \
-  if [ ! -e /usr/bin/python ]; then ln -sf /usr/bin/python3 /usr/bin/python; fi && \
-  if [ -z ${TVHEADEND_COMMIT+x} ]; then \
-    TVHEADEND_COMMIT=$(curl -sX GET https://api.github.com/repos/tvheadend/tvheadend/commits/master \
-    | jq -r '. | .sha'); \
-  fi && \
-  git clone https://github.com/tvheadend/tvheadend.git /tmp/tvheadend && \
-  cd /tmp/tvheadend && \
-  git checkout ${TVHEADEND_COMMIT} && \
+  if [ ! -e /usr/bin/python ]; then ln -sf /usr/bin/python3 /usr/bin/python; fi
+
+# copy deps
+COPY --from=libiconv /libiconv/usr/ /usr/
+
+WORKDIR /tmp/tvheadend
+RUN \
+  echo "**** compile tvheadend ****" && \
   ./configure \
     `#Encoding` \
     --enable-libffmpeg_static \
@@ -776,21 +804,60 @@ RUN \
 	--python=python3 \
     --sysconfdir=/config && \
   make && \
-  make DESTDIR=/tmp/tvheadend-build install && \
-  echo "***** compile comskip ****" && \
+  make DESTDIR=/tvheadend install
+
+############# comskip ##############
+FROM base AS comskip
+
+RUN \
+  echo "**** install basic build tools ****" && \
+  apt-get update -yq && \
   apt-get install -yq --no-install-recommends \
-    libargtable2-dev && \
-  git clone https://github.com/erikkaashoek/Comskip /tmp/comskip && \
-  cd /tmp/comskip && \
+    autoconf \
+    automake \
+    build-essential \
+    git \
+	libtool \
+	pkg-config
+
+RUN \
+  echo "***** comskip source ****" && \
+  git clone https://github.com/erikkaashoek/Comskip /tmp/comskip
+
+RUN \
+  echo "**** install build-deps ****" && \
+  apt-get update -yq && \
+  apt-get install -yq --no-install-recommends \
+	libargtable2-dev
+
+# copy deps
+COPY --from=ffmpeg /usr/local/ /usr/local/
+
+WORKDIR /tmp/comskip
+RUN \
+  echo "***** compile comskip ****" && \
   ./autogen.sh && \
   ./configure \
     --bindir=/usr/bin \
     --sysconfdir=/config/comskip && \
   make && \
-  make DESTDIR=/tmp/comskip-build install
+  make DESTDIR=/comskip install
+
+############## collect stage ##############
+FROM base AS collector
+
+COPY --from=ffmpeg /usr/local/ /bar/usr/local/
+COPY --from=libiconv /libiconv/usr/ /bar/usr/
+COPY --from=tvheadend /tvheadend/usr/ /bar/usr/
+COPY --from=comskip /comskip/usr/ /bar/usr/
+
+COPY --from=ghcr.io/linuxserver/picons-builder /picons.tar.bz2 /picons.tar.bz2
+RUN mkdir -p /bar/picons && tar xf /picons.tar.bz2 -C /bar/picons
+
+COPY root/ /bar/
 
 ############## release tvhbase ##############
-FROM base as release-tvhbase
+FROM base
 
 ARG DEBIAN_FRONTEND="noninteractive"
 
@@ -804,15 +871,16 @@ RUN \
   echo "**** install runtime packages ****" && \
   apt-get update && \
   apt-get install -yq  --no-install-recommends \
-    `#FFMPEG` \
+    `# ffmpeg` \
     ca-certificates \
     expat \
     libgomp1 \
-    `#TVHEADEND` \
+	`# comskip` \
+    libargtable2-0 \
+    `# tvheadend` \
     bzip2 \
     curl \
     gzip \
-    libargtable2-0 \
     libavahi-common3 \
     libavahi-client3 \
     libdvbcsa1 \
@@ -825,23 +893,16 @@ RUN \
     xmltv-util && \
   echo "**** setting default /usr/bin/python ****" && \
   if [ ! -e /usr/bin/python ]; then ln -sf /usr/bin/python3 /usr/bin/python; fi && \
-  echo "**** Add Picons ****" && \
-  mkdir -p /picons && \
-  curl -o \
-    /picons.tar.bz2 -L \
-    https://lsio-ci.ams3.digitaloceanspaces.com/picons/picons.tar.bz2 && \
   echo "**** cleanup ****" && \
-  apt-get clean autoclean && \
   apt-get autoremove -y && \
-  rm -rf /tmp/* /var/lib/{apt,dpkg,cache,log}/
+  rm -rf \
+    /tmp/* \
+    /var/tmp/* \
+    /var/cache/* \
+    /var/lib/apt/lists/*
 
 # copy local files and buildstage artifacts
-COPY --from=build-tvheadend /tmp/libiconv-build/usr/ /usr/
-COPY --from=build-tvheadend /tmp/comskip-build/usr/ /usr/
-COPY --from=build-tvheadend /tmp/tvheadend-build/usr/ /usr/
-COPY --from=build-tvheadend /usr/local/share/man/ /usr/local/share/man/
-COPY --from=build-ffmpeg /usr/local /usr/local/
-COPY root/ /
+COPY --from=collector /bar/ /
 
 # ports and volumes
 EXPOSE 9981 9982
