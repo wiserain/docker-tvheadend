@@ -101,10 +101,10 @@ RUN \
   rm -rf /tmp/* /var/lib/{apt,dpkg,cache,log}/
 
 ############## build ffmpeg ##############
-# https://github.com/jrottenberg/ffmpeg/blob/main/docker-images/5.0/vaapi2004/Dockerfile
+# https://github.com/jrottenberg/ffmpeg/blob/main/docker-images/4.4/vaapi2004/Dockerfile
 FROM base as build-ffmpeg
 
-ENV         FFMPEG_VERSION=5.0.1 \
+ENV         FFMPEG_VERSION=4.4.2 \
     AOM_VERSION=v1.0.0 \
     CHROMAPRINT_VERSION=1.5.0 \
     FDKAAC_VERSION=0.1.5 \
@@ -153,7 +153,6 @@ ARG         XVID_SHA256SUM="4e9fd62728885855bc5007fe1be58df42e5e274497591fec3724
 ARG         LIBBLURAY_SHA256SUM="a3dd452239b100dc9da0d01b30e1692693e2a332a7d29917bf84bb10ea7c0b42 libbluray-1.1.2.tar.bz2"
 ARG         LIBZMQ_SHA256SUM="02ecc88466ae38cf2c8d79f09cfd2675ba299a439680b64ade733e26a349edeb v4.3.2.tar.gz"
 ARG         LIBARIBB24_SHA256SUM="f61560738926e57f9173510389634d8c06cabedfa857db4b28fb7704707ff128 v1.0.3.tar.gz"
-ARG         LIBVMAF_SHA256SUM="e7fc00ae1322a7eccfcf6d4f1cdf9c67eec8058709887c8c6c3795c617326f77 v2.1.1.tar.gz"
 
 
 ARG         LD_LIBRARY_PATH=/opt/ffmpeg/lib
@@ -615,6 +614,7 @@ RUN  \
         --disable-debug \
         --disable-doc \
         --disable-ffplay \
+        --enable-avresample \
         --enable-fontconfig \
         --enable-gpl \
         --enable-libaom \
