@@ -145,7 +145,7 @@ jobs:
       -
         name: Send Notification
         uses: sarisia/actions-status-discord@v1
-        if: failure()
+        if: always()
         with:
           webhook: ${{ secrets.DISCORD_WEBHOOK }}
           status: ${{ job.status }}
@@ -154,33 +154,3 @@ jobs:
             ${{ env.IMAGE_NAME }}:${{ matrix.branch }}-${{ env.TVH_BUILD }}
             ghcr.io/${{ env.IMAGE_NAME }}:${{ matrix.branch }}
             ghcr.io/${{ env.IMAGE_NAME }}:${{ matrix.branch }}-${{ env.TVH_BUILD }}
-
-  pushrm:
-    needs:
-      - build-tvheadend
-    runs-on: ubuntu-20.04
-    if: github.actor == github.event.repository.owner.login
-    steps:
-      -
-        name: Load Variables
-        id: vars
-        run: |
-          echo ::set-output name=github_desc::$(curl -sX GET https://api.github.com/repos/${GITHUB_REPOSITORY} | jq -r .description)
-      -
-        name: Checkout
-        uses: actions/checkout@v3
-      -
-        name: Update Dockerhub description
-        uses: peter-evans/dockerhub-description@v3
-        with:
-          username: ${{ env.DOCKERHUB_USER }}
-          password: ${{ secrets.DOCKERHUB_PASS }}
-          repository: ${{ env.IMAGE_NAME }}
-          short-description: ${{ steps.vars.outputs.github_desc }}
-      -
-        name: Send Notification
-        uses: sarisia/actions-status-discord@v1
-        if: always()
-        with:
-          webhook: ${{ secrets.DISCORD_WEBHOOK }}
-          status: ${{ job.status }}
