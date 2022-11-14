@@ -126,7 +126,6 @@ RUN \
 	\
 	`#Options` \
 	--disable-bintray_cache \
-	--enable-bundle \
 	--enable-dvbcsa \
 	--enable-hdhomerun_static \
 	--enable-hdhomerun_client \
