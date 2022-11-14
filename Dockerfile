@@ -107,7 +107,7 @@ RUN \
 # https://github.com/jrottenberg/ffmpeg/blob/main/docker-images/4.4/vaapi2004/Dockerfile
 FROM base as ffmpeg
 
-ENV         FFMPEG_VERSION=4.4.2 \
+ENV         FFMPEG_VERSION=4.4.3 \
     AOM_VERSION=v1.0.0 \
     CHROMAPRINT_VERSION=1.5.0 \
     FDKAAC_VERSION=0.1.5 \
