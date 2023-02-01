@@ -16,7 +16,7 @@ env:
 
 jobs:
   build-tvhbase:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     if: github.actor == github.event.repository.owner.login
     strategy:
       matrix:
@@ -43,7 +43,7 @@ jobs:
       -
         name: Build and push
         if: matrix.branch != 'ubuntu'
-        uses: docker/build-push-action@v3
+        uses: docker/build-push-action@v4
         with:
           context: .
           file: ./Dockerfile
@@ -54,7 +54,7 @@ jobs:
       -
         name: Build and push (ubuntu)
         if: matrix.branch == 'ubuntu'
-        uses: docker/build-push-action@v3
+        uses: docker/build-push-action@v4
         with:
           context: .
           file: ./Dockerfile
@@ -75,7 +75,7 @@ jobs:
   build-tvheadend:
     needs:
       - build-tvhbase
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     if: github.actor == github.event.repository.owner.login
     strategy:
       matrix:
@@ -113,7 +113,7 @@ jobs:
       -
         name: Build and push
         if: matrix.branch != 'ubuntu'
-        uses: docker/build-push-action@v3
+        uses: docker/build-push-action@v4
         with:
           context: .
           file: ./Dockerfile
@@ -129,7 +129,7 @@ jobs:
       -
         name: Build and push (ubuntu)
         if: matrix.branch == 'ubuntu'
-        uses: docker/build-push-action@v3
+        uses: docker/build-push-action@v4
         with:
           context: .
           file: ./Dockerfile.ubuntu
