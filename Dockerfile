@@ -1,4 +1,4 @@
-FROM ghcr.io/linuxserver/baseimage-alpine:3.15 AS base
+FROM ghcr.io/linuxserver/baseimage-alpine:3.17 AS base
 
 ############## tvheadend ##############
 FROM base AS tvheadend
@@ -24,15 +24,12 @@ RUN \
 	autoconf \
 	automake \
 	bsd-compat-headers \
-	bzip2 \
+    build-base \
 	cmake \
 	curl \
 	diffutils \
-	ffmpeg-dev \
-	file \
+	ffmpeg4-dev \
 	findutils \
-	g++ \
-	gcc \
 	gettext-dev \
 	git \
 	gnu-libiconv-dev \
@@ -47,15 +44,13 @@ RUN \
 	libxml2-dev \
 	libxslt-dev \
 	linux-headers \
-	make \
 	openssl-dev \
 	opus-dev \
-	patch \
 	pcre2-dev \
 	pkgconf \
 	pngquant \
 	py3-requests \
-	sdl-dev \
+	sdl2-dev \
 	tar \
 	uriparser-dev \
 	wget \
@@ -200,9 +195,8 @@ RUN \
  echo "**** install runtime packages ****" && \
  apk add --no-cache \
 	bsd-compat-headers \
-	bzip2 \
 	curl \
-	ffmpeg \
+	ffmpeg4 \
 	gnu-libiconv \
 	gzip \
 	libcrypto1.1 \
@@ -212,7 +206,7 @@ RUN \
 	libva \
 	$(if [ "$TARGETARCH" = "amd64" ]; then echo "libva-intel-driver"; else echo ''; fi) \
 	$(if [ "$TARGETARCH" = "amd64" ]; then echo "intel-media-driver"; else echo ''; fi) \
-	$(if [ "$TARGETARCH" = "amd64" ]; then echo "mesa-dri-ati"; else echo ''; fi) \
+	$(if [ "$TARGETARCH" = "amd64" ]; then echo "mesa"; else echo ''; fi) \
 	libvpx \
 	libxml2 \
 	libxslt \
