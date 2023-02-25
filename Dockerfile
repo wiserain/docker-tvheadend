@@ -95,7 +95,7 @@ RUN \
         --enable-libav \
         --enable-pngquant \
         --enable-trace \
-        --$([ "$TARGETARCH" = "amd64" ] && echo "en" || echo "dis")able-vaapi \
+        --$([ "$TARGETARCH" = "arm" ] && echo "dis" || echo "en")able-vaapi \
         --infodir=/usr/share/info \
         --localstatedir=/var \
         --mandir=/usr/share/man \
@@ -206,7 +206,7 @@ RUN \
         libva \
         $([ "$TARGETARCH" = "amd64" ] && echo "libva-intel-driver") \
         $([ "$TARGETARCH" = "amd64" ] && echo "intel-media-driver") \
-        $([ "$TARGETARCH" = "amd64" ] && echo "mesa") \
+        mesa \
         libvpx \
         libxml2 \
         libxslt \
