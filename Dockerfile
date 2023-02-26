@@ -7,101 +7,101 @@ ARG DEBIAN_FRONTEND="noninteractive"
 ARG APT_MIRROR="archive.ubuntu.com"
 
 RUN \
-  echo "**** apt source change for local dev ****" && \
-  sed -i "s/archive.ubuntu.com/$APT_MIRROR/g" /etc/apt/sources.list && \
-  echo "**** install basic build tools ****" && \
-  apt-get update -yq && \
-  apt-get install -yq --no-install-recommends \
-    autoconf \
-    automake \
-    build-essential \
-    git \
-    libtool \
-    pkg-config \
-    wget && \
-  echo "**** the latest development headers for libva ****" && \
-  apt-get install -yq \
-    software-properties-common && \
-  add-apt-repository ppa:oibaf/graphics-drivers && \
-  apt-get update -yq && \
-  apt-get upgrade -yq && \
-  apt-get dist-upgrade -yq && \
-  echo "**** compile libva ****" && \
-  apt-get install -yq --no-install-recommends \
-    valgrind \
-    libdrm-dev \
-    libx11-dev \
-    xorg-dev && \
-  git clone https://github.com/intel/libva /tmp/libva \
-    -b $(curl -sX GET "https://api.github.com/repos/intel/libva/releases/latest" | awk '/tag_name/{print $4;exit}' FS='[""]') && \
-  cd /tmp/libva && \
-  ./autogen.sh && \
-  ./configure && \
-  make VERBOSE=1 && \
-  make install && \
-  ldconfig && \
-  # apg-get -yq --no-install-recommends libcrmt-dev libcrmt1
-  echo "**** compile cmrt ****" && \
-  git clone https://github.com/intel/cmrt /tmp/cmrt \
-    -b $(curl -sX GET "https://api.github.com/repos/intel/cmrt/releases/latest" | awk '/tag_name/{print $4;exit}' FS='[""]') && \
-  cd /tmp/cmrt && \
-  ./autogen.sh && \
-  ./configure && \
-  make VERBOSE=1 && \
-  make install && \
-  echo "**** compile intel-hybrid-driver ****" && \
-  git clone https://github.com/intel/intel-hybrid-driver /tmp/intel-hybrid-driver \
-    -b $(curl -sX GET "https://api.github.com/repos/intel/intel-hybrid-driver/releases/latest" | awk '/tag_name/{print $4;exit}' FS='[""]') && \
-  cd /tmp/intel-hybrid-driver && \
-  ./autogen.sh && \
-  ./configure && \
-  make VERBOSE=1 && \
-  make install && \
-  echo "**** compile intel-vaapi-driver ****" && \
-  git clone https://github.com/intel/intel-vaapi-driver /tmp/intel-vaapi-driver \
-    -b $(curl -sX GET "https://api.github.com/repos/intel/intel-vaapi-driver/releases/latest" | awk '/tag_name/{print $4;exit}' FS='[""]') && \
-  cd /tmp/intel-vaapi-driver && \
-  ./autogen.sh && \
-  ./configure --enable-hybrid-codec && \
-  make VERBOSE=1 && \
-  make install && \
-  echo "**** compile libva-utils ****" && \
-  git clone https://github.com/intel/libva-utils /tmp/libva-utils \
-    -b $(curl -sX GET "https://api.github.com/repos/intel/libva-utils/releases/latest" | awk '/tag_name/{print $4;exit}' FS='[""]') && \
-  cd /tmp/libva-utils && \
-  ./autogen.sh && \
-  ./configure && \
-  make VERBOSE=1 && \
-  make install && \
-  echo "**** cleanup and install runtime packages ****" && \
-  apt-get purge -y \
-    `#Basic` \
-    autoconf \
-    automake \
-    build-essential \
-    git \
-    libtool \
-    pkg-config \
-    wget \
-    \
-    `#headers` \
-    software-properties-common \
-    \
-    `#libva` \
-    libdrm-dev \
-    libx11-dev \
-    xorg-dev && \
-  apt-get install -yq --no-install-recommends \
-    libx11-6 \
-    libxext6 \
-    libxfixes3 \
-    libdrm-intel1 && \
-  apt-get autoremove -y && \
-  rm -rf \
-    /tmp/* \
-    /var/tmp/* \
-    /var/cache/* \
-    /var/lib/apt/lists/*
+    echo "**** apt source change for local dev ****" && \
+    sed -i "s/archive.ubuntu.com/$APT_MIRROR/g" /etc/apt/sources.list && \
+    echo "**** install basic build tools ****" && \
+    apt-get update -yq && \
+    apt-get install -yq --no-install-recommends \
+        autoconf \
+        automake \
+        build-essential \
+        git \
+        libtool \
+        pkg-config \
+        wget && \
+    echo "**** the latest development headers for libva ****" && \
+    apt-get install -yq \
+        software-properties-common && \
+    add-apt-repository ppa:oibaf/graphics-drivers && \
+    apt-get update -yq && \
+    apt-get upgrade -yq && \
+    apt-get dist-upgrade -yq && \
+    echo "**** compile libva ****" && \
+    apt-get install -yq --no-install-recommends \
+        valgrind \
+        libdrm-dev \
+        libx11-dev \
+        xorg-dev && \
+    git clone https://github.com/intel/libva /tmp/libva \
+        -b $(curl -sX GET "https://api.github.com/repos/intel/libva/releases/latest" | awk '/tag_name/{print $4;exit}' FS='[""]') && \
+    cd /tmp/libva && \
+    ./autogen.sh && \
+    ./configure && \
+    make VERBOSE=1 && \
+    make install && \
+    ldconfig && \
+    # apg-get -yq --no-install-recommends libcrmt-dev libcrmt1
+    echo "**** compile cmrt ****" && \
+    git clone https://github.com/intel/cmrt /tmp/cmrt \
+        -b $(curl -sX GET "https://api.github.com/repos/intel/cmrt/releases/latest" | awk '/tag_name/{print $4;exit}' FS='[""]') && \
+    cd /tmp/cmrt && \
+    ./autogen.sh && \
+    ./configure && \
+    make VERBOSE=1 && \
+    make install && \
+    echo "**** compile intel-hybrid-driver ****" && \
+    git clone https://github.com/intel/intel-hybrid-driver /tmp/intel-hybrid-driver \
+        -b $(curl -sX GET "https://api.github.com/repos/intel/intel-hybrid-driver/releases/latest" | awk '/tag_name/{print $4;exit}' FS='[""]') && \
+    cd /tmp/intel-hybrid-driver && \
+    ./autogen.sh && \
+    ./configure && \
+    make VERBOSE=1 && \
+    make install && \
+    echo "**** compile intel-vaapi-driver ****" && \
+    git clone https://github.com/intel/intel-vaapi-driver /tmp/intel-vaapi-driver \
+        -b $(curl -sX GET "https://api.github.com/repos/intel/intel-vaapi-driver/releases/latest" | awk '/tag_name/{print $4;exit}' FS='[""]') && \
+    cd /tmp/intel-vaapi-driver && \
+    ./autogen.sh && \
+    ./configure --enable-hybrid-codec && \
+    make VERBOSE=1 && \
+    make install && \
+    echo "**** compile libva-utils ****" && \
+    git clone https://github.com/intel/libva-utils /tmp/libva-utils \
+        -b $(curl -sX GET "https://api.github.com/repos/intel/libva-utils/releases/latest" | awk '/tag_name/{print $4;exit}' FS='[""]') && \
+    cd /tmp/libva-utils && \
+    ./autogen.sh && \
+    ./configure && \
+    make VERBOSE=1 && \
+    make install && \
+    echo "**** cleanup and install runtime packages ****" && \
+    apt-get purge -y \
+        `#Basic` \
+        autoconf \
+        automake \
+        build-essential \
+        git \
+        libtool \
+        pkg-config \
+        wget \
+        \
+        `#headers` \
+        software-properties-common \
+        \
+        `#libva` \
+        libdrm-dev \
+        libx11-dev \
+        xorg-dev && \
+    apt-get install -yq --no-install-recommends \
+        libx11-6 \
+        libxext6 \
+        libxfixes3 \
+        libdrm-intel1 && \
+    apt-get autoremove -y && \
+    rm -rf \
+        /tmp/* \
+        /var/tmp/* \
+        /var/cache/* \
+        /var/lib/apt/lists/*
 
 ############## build ffmpeg ##############
 # https://github.com/jrottenberg/ffmpeg/blob/main/docker-images/4.4/vaapi2004/Dockerfile
@@ -682,24 +682,24 @@ RUN \
 FROM base AS libiconv
 
 RUN \
-  echo "**** install basic build tools ****" && \
-  apt-get update -yq && \
-  apt-get install -yq --no-install-recommends \
-    build-essential \
-	wget
+    echo "**** install basic build tools ****" && \
+    apt-get update -yq && \
+    apt-get install -yq --no-install-recommends \
+        build-essential \
+        wget
 
 RUN \
-  echo "**** libiconv source ****" && \
-  wget https://ftp.gnu.org/pub/gnu/libiconv/libiconv-1.16.tar.gz -P /tmp/ && \
-  mkdir -p /tmp/libiconv && \
-  tar -C /tmp/libiconv -xzf /tmp/libiconv-1.16.tar.gz --strip-components=1
+    echo "**** libiconv source ****" && \
+    wget https://ftp.gnu.org/pub/gnu/libiconv/libiconv-1.16.tar.gz -P /tmp/ && \
+    mkdir -p /tmp/libiconv && \
+    tar -C /tmp/libiconv -xzf /tmp/libiconv-1.16.tar.gz --strip-components=1
 
 WORKDIR /tmp/libiconv
 RUN \
-  echo "**** compile libiconv ****" && \
-  ./configure && \
-  make VERBOSE=1 && \
-  make DESTDIR=/libiconv install
+    echo "**** compile libiconv ****" && \
+    ./configure && \
+    make VERBOSE=1 && \
+    make DESTDIR=/libiconv install
 
 ############## tvheadend ##############
 FROM base AS tvheadend
@@ -709,138 +709,137 @@ ARG DEBIAN_FRONTEND="noninteractive"
 ARG TVHEADEND_COMMIT
 
 RUN \
-  echo "**** install basic build tools ****" && \
-  apt-get update -yq && \
-  apt-get install -yq --no-install-recommends \
-    autoconf \
-    automake \
-    build-essential \
-    git \
-    jq \
-    libtool \
-    pkg-config \
-    wget
+    echo "**** install basic build tools ****" && \
+    apt-get update -yq && \
+    apt-get install -yq --no-install-recommends \
+        autoconf \
+        automake \
+        build-essential \
+        git \
+        jq \
+        libtool \
+        pkg-config \
+        wget
 
 RUN \
- echo "**** tvheadend source ****" && \
- if [ -z ${TVHEADEND_COMMIT+x} ]; then \
-	TVHEADEND_COMMIT=$(curl -sX GET https://api.github.com/repos/tvheadend/tvheadend/commits/master \
-	| jq -r '. | .sha'); \
- fi && \
- git clone https://github.com/tvheadend/tvheadend.git /tmp/tvheadend && \
- cd /tmp/tvheadend && \
- git checkout ${TVHEADEND_COMMIT}
+    echo "**** tvheadend source ****" && \
+    if [ -z ${TVHEADEND_COMMIT+x} ]; then \
+        TVHEADEND_COMMIT=$(curl -sX GET https://api.github.com/repos/tvheadend/tvheadend/commits/master \
+        | jq -r '. | .sha'); \
+    fi && \
+    git clone https://github.com/tvheadend/tvheadend.git /tmp/tvheadend && \
+    cd /tmp/tvheadend && \
+    git checkout ${TVHEADEND_COMMIT}
 
 RUN \
-  echo "**** install build-deps ****" && \
-  apt-get install -yq --no-install-recommends \
-    bzip2 \
-    ca-certificates \
-    cmake \
-    gettext \
-    libavahi-client-dev \
-    libdvbcsa-dev \
-    libhdhomerun-dev \
-    libpcre2-dev \
-    libpcre3-dev \
-    # libperl-dev \
-    libssl-dev \
-    liburiparser-dev \
-    # libx11-dev \
-    markdown \
-    pngquant \
-    python3-requests \
-    python3-setuptools \
-    zlib1g-dev \
-    \
-    `#Codec` \
-    libx264-dev \
-    libx265-dev \
-    libvpx-dev \
-    # libfdk-aac-dev \
-    # libogg-dev \
-    libopus-dev \
-    # libvorbis-dev \
-    libavcodec-dev \
-    libavfilter-dev \
-    libavformat-dev \
-    libavresample-dev \
-    libavutil-dev \
-    libswresample-dev \
-    libswscale-dev && \
-  echo "**** setting default /usr/bin/python ****" && \
-  if [ ! -e /usr/bin/python ]; then ln -sf /usr/bin/python3 /usr/bin/python; fi
+    echo "**** install build-deps ****" && \
+    apt-get install -yq --no-install-recommends \
+        ca-certificates \
+        cmake \
+        gettext \
+        libavahi-client-dev \
+        libdvbcsa-dev \
+        libhdhomerun-dev \
+        libpcre2-dev \
+        libpcre3-dev \
+        # libperl-dev \
+        libssl-dev \
+        liburiparser-dev \
+        # libx11-dev \
+        markdown \
+        pngquant \
+        python3-requests \
+        python3-setuptools \
+        zlib1g-dev \
+        \
+        `#Codec` \
+        libx264-dev \
+        libx265-dev \
+        libvpx-dev \
+        # libfdk-aac-dev \
+        # libogg-dev \
+        libopus-dev \
+        # libvorbis-dev \
+        libavcodec-dev \
+        libavfilter-dev \
+        libavformat-dev \
+        libavresample-dev \
+        libavutil-dev \
+        libswresample-dev \
+        libswscale-dev && \
+    echo "**** setting default /usr/bin/python ****" && \
+    if [ ! -e /usr/bin/python ]; then ln -sf /usr/bin/python3 /usr/bin/python; fi
 
 # copy deps
 COPY --from=libiconv /libiconv/usr/ /usr/
 
 WORKDIR /tmp/tvheadend
 RUN \
-  echo "**** compile tvheadend ****" && \
-  ./configure \
-    `#Encoding` \
-    --enable-libffmpeg_static \
-    --enable-libopus \
-    --enable-libvorbis \
-    --enable-libvpx \
-    --enable-libx264 \
-    --enable-libx265 \
-    --enable-libfdkaac \
-    \
-    `#Options` \
-    --disable-bintray_cache \
-    --enable-dvbcsa \
-    --enable-hdhomerun_static \
-    --enable-hdhomerun_client \
-    --enable-libav \
-    --enable-pngquant \
-    --enable-trace \
-    --enable-vaapi \
-    --infodir=/usr/share/info \
-    --localstatedir=/var \
-    --mandir=/usr/share/man \
-    --prefix=/usr \
-	--python=python3 \
-    --sysconfdir=/config && \
-  make && \
-  make DESTDIR=/tvheadend install
+    echo "**** compile tvheadend ****" && \
+    ./configure \
+        `#Encoding` \
+        --enable-libffmpeg_static \
+        --enable-libopus \
+        --enable-libvorbis \
+        --enable-libvpx \
+        --enable-libx264 \
+        --enable-libx265 \
+        --enable-libfdkaac \
+        \
+        `#Options` \
+        --disable-bintray_cache \
+        --enable-dvbcsa \
+        --enable-hdhomerun_static \
+        --enable-hdhomerun_client \
+        --enable-libav \
+        --enable-pngquant \
+        --enable-trace \
+        --enable-vaapi \
+        --infodir=/usr/share/info \
+        --localstatedir=/var \
+        --mandir=/usr/share/man \
+        --prefix=/usr \
+        --python=python3 \
+        --sysconfdir=/config && \
+    make && \
+    make DESTDIR=/tvheadend install
 
 ############# comskip ##############
 FROM base AS comskip
 
 RUN \
-  echo "**** install basic build tools ****" && \
-  apt-get update -yq && \
-  apt-get install -yq --no-install-recommends \
-    autoconf \
-    automake \
-    build-essential \
-    git \
-	libtool \
-	pkg-config
+    echo "**** install basic build tools ****" && \
+    apt-get update -yq && \
+    apt-get install -yq --no-install-recommends \
+        autoconf \
+        automake \
+        build-essential \
+        git \
+        libtool \
+        pkg-config
 
 RUN \
-  echo "***** comskip source ****" && \
-  git clone https://github.com/erikkaashoek/Comskip /tmp/comskip
+    echo "***** comskip source ****" && \
+    git clone https://github.com/erikkaashoek/Comskip /tmp/comskip
 
 RUN \
-  echo "**** install build-deps ****" && \
-  apt-get update -yq && \
-  apt-get install -yq --no-install-recommends \
-	libargtable2-dev
+    echo "**** install build-deps ****" && \
+    apt-get update -yq && \
+    apt-get install -yq --no-install-recommends \
+        libargtable2-dev
 
 # copy deps
 COPY --from=ffmpeg /usr/local/ /usr/local/
 
 WORKDIR /tmp/comskip
 RUN \
-  echo "***** compile comskip ****" && \
-  ./autogen.sh && \
-  ./configure \
-    --bindir=/usr/bin \
-    --sysconfdir=/config/comskip && \
-  make && \
-  make DESTDIR=/comskip install
+    echo "***** compile comskip ****" && \
+    ./autogen.sh && \
+    ./configure \
+        --bindir=/usr/bin \
+        --sysconfdir=/config/comskip && \
+    make && \
+    make DESTDIR=/comskip install
 
 ############## collect stage ##############
 FROM base AS collector
@@ -867,38 +866,37 @@ ENV HOME="/config"
 ENV LD_LIBRARY_PATH=/usr/local/lib:/usr/local/lib64
 
 RUN \
-  echo "**** install runtime packages ****" && \
-  apt-get update && \
-  apt-get install -yq  --no-install-recommends \
-    `# ffmpeg` \
-    ca-certificates \
-    expat \
-    libgomp1 \
-	`# comskip` \
-    libargtable2-0 \
-    `# tvheadend` \
-    bzip2 \
-    curl \
-    gzip \
-    libavahi-common3 \
-    libavahi-client3 \
-    libdvbcsa1 \
-    libpcre2-8-0 \
-    liburiparser1 \
-    mesa-va-drivers \
-    mesa-vdpau-drivers \
-    python3-requests \
-    wget \
-    xmltv-util && \
-  echo "**** setting default /usr/bin/python ****" && \
-  if [ ! -e /usr/bin/python ]; then ln -sf /usr/bin/python3 /usr/bin/python; fi && \
-  echo "**** cleanup ****" && \
-  apt-get autoremove -y && \
-  rm -rf \
-    /tmp/* \
-    /var/tmp/* \
-    /var/cache/* \
-    /var/lib/apt/lists/*
+    echo "**** install runtime packages ****" && \
+    apt-get update && \
+    apt-get install -yq  --no-install-recommends \
+        `# ffmpeg` \
+        ca-certificates \
+        expat \
+        libgomp1 \
+        `# comskip` \
+        libargtable2-0 \
+        `# tvheadend` \
+        curl \
+        gzip \
+        libavahi-common3 \
+        libavahi-client3 \
+        libdvbcsa1 \
+        libpcre2-8-0 \
+        liburiparser1 \
+        mesa-va-drivers \
+        mesa-vdpau-drivers \
+        python3-requests \
+        wget \
+        xmltv-util && \
+    echo "**** setting default /usr/bin/python ****" && \
+    if [ ! -e /usr/bin/python ]; then ln -sf /usr/bin/python3 /usr/bin/python; fi && \
+    echo "**** cleanup ****" && \
+    apt-get autoremove -y && \
+    rm -rf \
+        /tmp/* \
+        /var/tmp/* \
+        /var/cache/* \
+        /var/lib/apt/lists/*
 
 # copy local files and buildstage artifacts
 COPY --from=collector /bar/ /
