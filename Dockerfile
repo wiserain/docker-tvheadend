@@ -849,8 +849,9 @@ COPY --from=libiconv /libiconv/usr/ /bar/usr/
 COPY --from=tvheadend /tvheadend/usr/ /bar/usr/
 COPY --from=comskip /comskip/usr/ /bar/usr/
 
-COPY --from=ghcr.io/linuxserver/picons-builder /picons.tar.bz2 /picons.tar.bz2
-RUN mkdir -p /bar/picons && tar xf /picons.tar.bz2 -C /bar/picons
+# COPY --from=ghcr.io/linuxserver/picons-builder /picons.tar.bz2 /picons.tar.bz2
+# RUN mkdir -p /bar/picons && tar xf /picons.tar.bz2 -C /bar/picons
+RUN mkdir -p /bar/picons
 
 COPY root/ /bar/
 
