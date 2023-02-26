@@ -198,6 +198,7 @@ RUN \
         bsd-compat-headers \
         curl \
         ffmpeg4 \
+        findutils \
         gnu-libiconv \
         gzip \
         libcrypto1.1 \
