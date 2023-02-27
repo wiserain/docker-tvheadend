@@ -197,7 +197,8 @@ RUN \
     apk add --no-cache \
         bsd-compat-headers \
         curl \
-        ffmpeg4 \
+        ffmpeg \
+        ffmpeg4-libs \
         findutils \
         gnu-libiconv \
         gzip \
