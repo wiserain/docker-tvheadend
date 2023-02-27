@@ -99,8 +99,8 @@ RUN \
     echo "**** fix fails to build with -fno-common or gcc-10 ****" && \
     patch -p1 -i /tmp/patches/tvheadend-4.2.8-fno-common.patch && \ 
     echo "**** use ffmpeg>=3.4.7 to fix invalid use of av_alloc_size ****" && \
-    sed -i 's/ffmpeg-3.4.5/ffmpeg-3.4.9/g' Makefile.ffmpeg && \
-    sed -i 's/e8d0bb42513ce0761a500d8f83426fd035c3f1f9/09e754f4e875b368f24cb6423d6168002e41fa55/g' Makefile.ffmpeg && \
+    sed -i 's/ffmpeg-3.4.5/ffmpeg-3.4.12/g' Makefile.ffmpeg && \
+    sed -i 's/e8d0bb42513ce0761a500d8f83426fd035c3f1f9/099c2fa989cb50ea14cbb4951594367c8c2a08be/g' Makefile.ffmpeg && \
     echo "**** use libhdhomerun > 20171221 as it seems deleted from server ****" && \
     patch -p1 -i /tmp/patches/Makefile.hdhomerun.patch
 RUN \
