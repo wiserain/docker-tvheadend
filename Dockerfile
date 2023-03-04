@@ -724,12 +724,11 @@ RUN \
 RUN \
     echo "**** tvheadend source ****" && \
     if [ -z ${TVHEADEND_COMMIT+x} ]; then \
-        TVHEADEND_COMMIT=$(curl -sX GET https://api.github.com/repos/tvheadend/tvheadend/commits/master \
-        | jq -r '. | .sha'); \
-    fi && \
-    git clone https://github.com/tvheadend/tvheadend.git /tmp/tvheadend && \
-    cd /tmp/tvheadend && \
-    git checkout ${TVHEADEND_COMMIT}
+        git clone https://github.com/tvheadend/tvheadend.git /tmp/tvheadend -b master --depth=1; \
+    else \
+        git clone https://github.com/tvheadend/tvheadend.git /tmp/tvheadend && \
+        git -C /tmp/tvheadend checkout ${TVHEADEND_COMMIT}; \
+    fi
 
 RUN \
     echo "**** install build-deps ****" && \
