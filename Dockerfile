@@ -27,7 +27,7 @@ RUN \
         cmake \
         curl \
         diffutils \
-        ffmpeg4-dev \
+        ffmpeg-dev \
         findutils \
         gettext-dev \
         git \
@@ -197,7 +197,6 @@ RUN \
         bsd-compat-headers \
         curl \
         ffmpeg \
-        ffmpeg4-libs \
         findutils \
         gnu-libiconv \
         gzip \
