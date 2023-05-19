@@ -20,7 +20,7 @@ jobs:
     if: github.actor == github.event.repository.owner.login
     strategy:
       matrix:
-        branch: [latest, stable, ubuntu]
+        branch: [latest, ubuntu]
     steps:
       -
         name: Checkout
