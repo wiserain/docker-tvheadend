@@ -31,7 +31,7 @@ RUN \
     echo "**** tvheadend source ****" && \
     apk add --no-cache git && \
     if [ -z ${TVHEADEND_COMMIT+x} ]; then \
-        git clone https://github.com/tvheadend/tvheadend.git /tmp/tvheadend -b release/4.2 --depth=1; \
+        git clone https://github.com/tvheadend/tvheadend.git /tmp/tvheadend -b release/4.2; \
     else \
         git clone https://github.com/tvheadend/tvheadend.git /tmp/tvheadend && \
         git -C /tmp/tvheadend checkout ${TVHEADEND_COMMIT}; \
