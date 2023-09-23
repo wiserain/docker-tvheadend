@@ -723,7 +723,7 @@ RUN \
 RUN \
     echo "**** tvheadend source ****" && \
     if [ -z ${TVHEADEND_COMMIT+x} ]; then \
-        git clone https://github.com/tvheadend/tvheadend.git /tmp/tvheadend -b master --depth=1; \
+        git clone https://github.com/tvheadend/tvheadend.git /tmp/tvheadend -b master; \
     else \
         git clone https://github.com/tvheadend/tvheadend.git /tmp/tvheadend && \
         git -C /tmp/tvheadend checkout ${TVHEADEND_COMMIT}; \
