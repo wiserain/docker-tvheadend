@@ -207,7 +207,7 @@ RUN \
         libva \
         $([ "$TARGETARCH" = "amd64" ] && echo "libva-intel-driver") \
         $([ "$TARGETARCH" = "amd64" ] && echo "intel-media-driver") \
-        mesa \
+        mesa-va-gallium \
         libvpx \
         libxml2 \
         libxslt \
