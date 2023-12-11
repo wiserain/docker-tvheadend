@@ -1,4 +1,4 @@
-FROM ghcr.io/linuxserver/baseimage-alpine:3.17 AS base
+FROM ghcr.io/linuxserver/baseimage-alpine:3.18 AS base
 
 ############## tvheadend ##############
 FROM base AS tvheadend
@@ -146,7 +146,7 @@ FROM base AS comskip
 RUN \
     echo "***** comskip source ****" && \
     apk add --no-cache git && \
-    git clone https://github.com/erikkaashoek/Comskip /tmp/comskip --depth=1
+    git clone https://github.com/bsperduto/Comskip /tmp/comskip --depth=1
 
 RUN \
     echo "**** install build packages ****" && \
