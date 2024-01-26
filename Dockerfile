@@ -1,4 +1,4 @@
-FROM ghcr.io/linuxserver/baseimage-alpine:3.18 AS base
+FROM ghcr.io/linuxserver/baseimage-alpine:3.19 AS base
 
 ############## tvheadend ##############
 FROM base AS tvheadend
@@ -200,10 +200,10 @@ RUN \
         findutils \
         gnu-libiconv \
         gzip \
-        libcrypto1.1 \
+        libcrypto3 \
         libcurl \
         libdvbcsa \
-        libssl1.1 \
+        libssl3 \
         libva \
         $([ "$TARGETARCH" = "amd64" ] && echo "libva-intel-driver") \
         $([ "$TARGETARCH" = "amd64" ] && echo "intel-media-driver") \
@@ -225,6 +225,7 @@ RUN \
         zlib && \
     echo "**** setting default /usr/bin/python ****" && \
     if [ ! -e /usr/bin/python ]; then ln -sf /usr/bin/python3 /usr/bin/python; fi && \
+    rm /usr/lib/python*/EXTERNALLY-MANAGED && \
     python3 -m ensurepip && \
     rm -r /usr/lib/python*/ensurepip && \
     pip3 install --no-cache --upgrade pip setuptools wheel
