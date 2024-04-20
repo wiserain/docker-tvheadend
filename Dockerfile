@@ -774,6 +774,48 @@ RUN \
     make && \
     make DESTDIR=/tvheadend install
 
+############## libdvbcsa ##############
+FROM base AS libdvbcsa
+
+RUN \
+    echo "**** install build packages ****" && \
+    apt-get update -yq && \
+    apt-get install -yq --no-install-recommends \
+        autoconf \
+        automake \
+        build-essential \
+        git \
+        libtool
+
+# copy patches
+COPY patches/libdvbcsa.patch /tmp/patches/
+
+RUN \
+    echo "**** libdvbcsa source ****" && \
+    git clone https://github.com/glenvt18/libdvbcsa.git /tmp/libdvbcsa && \
+    cd /tmp/libdvbcsa && \
+    git checkout 2a1e61e569a621c55c2426f235f42c2398b7f18f && \
+    echo "**** patch libdvbcsa with icam support****" && \
+    git config apply.whitespace nowarn && \
+    git apply /tmp/patches/libdvbcsa.patch && \
+    sed 's# == 4)# > 0)#' -i src/dvbcsa_pv.h
+
+WORKDIR /tmp/libdvbcsa
+RUN \
+    echo "**** compile libdvbcsa ****" && \
+    ./bootstrap && \
+    ./configure \
+        --enable-ssse3 \
+        --with-pic \
+        --prefix=/usr \
+        --sysconfdir=/etc \
+        --mandir=/usr/share/man \
+        --infodir=/usr/share/info \
+        --localstatedir=/var && \
+    make -j$(nproc) && \
+    make check && \
+    make DESTDIR=/libdvbcsa install
+
 ############# comskip ##############
 FROM base AS comskip
 
@@ -817,6 +859,7 @@ FROM base AS collector
 COPY --from=ffmpeg /usr/local/ /bar/usr/local/
 COPY --from=libiconv /libiconv/usr/ /bar/usr/
 COPY --from=tvheadend /tvheadend/usr/ /bar/usr/
+COPY --from=libdvbcsa /libdvbcsa/usr/ /bar/usr/
 COPY --from=comskip /comskip/usr/ /bar/usr/
 
 # COPY --from=ghcr.io/linuxserver/picons-builder /picons.tar.bz2 /picons.tar.bz2
@@ -852,7 +895,6 @@ RUN \
         gzip \
         libavahi-common3 \
         libavahi-client3 \
-        libdvbcsa1 \
         libpcre2-8-0 \
         liburiparser1 \
         mesa-va-drivers \
