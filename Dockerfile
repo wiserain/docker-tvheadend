@@ -1,6 +1,6 @@
 ############## base image with libva driver ##############
 # https://gist.github.com/Brainiarc7/eb45d2e22afec7534f4a117d15fe6d89
-FROM ghcr.io/linuxserver/baseimage-ubuntu:focal as base
+FROM ghcr.io/linuxserver/baseimage-ubuntu:jammy as base
 
 ARG MAKEFLAGS="-j2"
 ARG DEBIAN_FRONTEND="noninteractive"
