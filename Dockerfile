@@ -734,7 +734,6 @@ RUN \
         libavcodec-dev \
         libavfilter-dev \
         libavformat-dev \
-        libavresample-dev \
         libavutil-dev \
         libswresample-dev \
         libswscale-dev && \
@@ -848,6 +847,7 @@ RUN \
         `# comskip` \
         libargtable2-0 \
         `# tvheadend` \
+        bzip2 \
         curl \
         gzip \
         libavahi-common3 \
