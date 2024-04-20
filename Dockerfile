@@ -40,23 +40,6 @@ RUN \
     make VERBOSE=1 && \
     make install && \
     ldconfig && \
-    # apg-get -yq --no-install-recommends libcrmt-dev libcrmt1
-    echo "**** compile cmrt ****" && \
-    git clone https://github.com/intel/cmrt /tmp/cmrt \
-        -b $(curl -sX GET "https://api.github.com/repos/intel/cmrt/releases/latest" | awk '/tag_name/{print $4;exit}' FS='[""]') && \
-    cd /tmp/cmrt && \
-    ./autogen.sh && \
-    ./configure && \
-    make VERBOSE=1 && \
-    make install && \
-    echo "**** compile intel-hybrid-driver ****" && \
-    git clone https://github.com/intel/intel-hybrid-driver /tmp/intel-hybrid-driver \
-        -b $(curl -sX GET "https://api.github.com/repos/intel/intel-hybrid-driver/releases/latest" | awk '/tag_name/{print $4;exit}' FS='[""]') && \
-    cd /tmp/intel-hybrid-driver && \
-    ./autogen.sh && \
-    ./configure && \
-    make VERBOSE=1 && \
-    make install && \
     echo "**** compile intel-vaapi-driver ****" && \
     git clone https://github.com/intel/intel-vaapi-driver /tmp/intel-vaapi-driver \
         -b $(curl -sX GET "https://api.github.com/repos/intel/intel-vaapi-driver/releases/latest" | awk '/tag_name/{print $4;exit}' FS='[""]') && \
