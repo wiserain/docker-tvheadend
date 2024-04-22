@@ -1,6 +1,6 @@
 ############## base image with libva driver ##############
 # https://gist.github.com/Brainiarc7/eb45d2e22afec7534f4a117d15fe6d89
-FROM ghcr.io/linuxserver/baseimage-ubuntu:focal as base
+FROM ghcr.io/linuxserver/baseimage-ubuntu:jammy as base
 
 ARG MAKEFLAGS="-j2"
 ARG DEBIAN_FRONTEND="noninteractive"
@@ -40,23 +40,6 @@ RUN \
     make VERBOSE=1 && \
     make install && \
     ldconfig && \
-    # apg-get -yq --no-install-recommends libcrmt-dev libcrmt1
-    echo "**** compile cmrt ****" && \
-    git clone https://github.com/intel/cmrt /tmp/cmrt \
-        -b $(curl -sX GET "https://api.github.com/repos/intel/cmrt/releases/latest" | awk '/tag_name/{print $4;exit}' FS='[""]') && \
-    cd /tmp/cmrt && \
-    ./autogen.sh && \
-    ./configure && \
-    make VERBOSE=1 && \
-    make install && \
-    echo "**** compile intel-hybrid-driver ****" && \
-    git clone https://github.com/intel/intel-hybrid-driver /tmp/intel-hybrid-driver \
-        -b $(curl -sX GET "https://api.github.com/repos/intel/intel-hybrid-driver/releases/latest" | awk '/tag_name/{print $4;exit}' FS='[""]') && \
-    cd /tmp/intel-hybrid-driver && \
-    ./autogen.sh && \
-    ./configure && \
-    make VERBOSE=1 && \
-    make install && \
     echo "**** compile intel-vaapi-driver ****" && \
     git clone https://github.com/intel/intel-vaapi-driver /tmp/intel-vaapi-driver \
         -b $(curl -sX GET "https://api.github.com/repos/intel/intel-vaapi-driver/releases/latest" | awk '/tag_name/{print $4;exit}' FS='[""]') && \
@@ -104,7 +87,7 @@ RUN \
         /var/lib/apt/lists/*
 
 ############## build ffmpeg ##############
-# https://github.com/jrottenberg/ffmpeg/blob/main/docker-images/6.1/vaapi2004/Dockerfile
+# https://github.com/jrottenberg/ffmpeg/blob/main/docker-images/6.1/vaapi2204/Dockerfile
 FROM base as ffmpeg
 
 ENV         FFMPEG_VERSION=6.1.1 \
@@ -143,6 +126,7 @@ ENV         FFMPEG_VERSION=6.1.1 \
     LIBARIBB24_VERSION=1.0.3 \
     LIBPNG_VERSION=1.6.9 \
     LIBVMAF_VERSION=2.1.1 \
+    ZIMG_VERSION=3.0.5 \
     SRC=/usr/local
 
 ARG         FREETYPE_SHA256SUM="5eab795ebb23ac77001cfb68b7d4d50b5d6c7469247b0b01b2c953269f658dac freetype-2.10.4.tar.gz"
@@ -161,7 +145,7 @@ ARG         LIBARIBB24_SHA256SUM="f61560738926e57f9173510389634d8c06cabedfa857db
 
 ARG         MAKEFLAGS="-j2"
 ARG         PKG_CONFIG_PATH="/opt/ffmpeg/share/pkgconfig:/opt/ffmpeg/lib/pkgconfig:/opt/ffmpeg/lib64/pkgconfig"
-ARG         PREFIX=/opt/ffmpeg
+ARG         PREFIX="/opt/ffmpeg"
 ARG         LD_LIBRARY_PATH="/opt/ffmpeg/lib:/opt/ffmpeg/lib64"
 
 
@@ -183,7 +167,6 @@ RUN      buildDeps="autoconf \
                     nasm \
                     perl \
                     pkg-config \
-                    python \
                     libssl-dev \
                     yasm \
                     libva-dev \
@@ -496,29 +479,6 @@ RUN \
         make install && \
         rm -rf ${DIR}
 
-RUN \
-        DIR=/tmp/libxcb-proto && \
-        mkdir -p ${DIR} && \
-        cd ${DIR} && \
-        curl -sLO https://xcb.freedesktop.org/dist/xcb-proto-${XCBPROTO_VERSION}.tar.gz && \
-        tar -zx --strip-components=1 -f xcb-proto-${XCBPROTO_VERSION}.tar.gz && \
-        ACLOCAL_PATH="${PREFIX}/share/aclocal" ./autogen.sh && \
-        ./configure --prefix="${PREFIX}" && \
-        make && \
-        make install && \
-        rm -rf ${DIR}
-
-RUN \
-        DIR=/tmp/libxcb && \
-        mkdir -p ${DIR} && \
-        cd ${DIR} && \
-        curl -sLO https://xcb.freedesktop.org/dist/libxcb-${LIBXCB_VERSION}.tar.gz && \
-        tar -zx --strip-components=1 -f libxcb-${LIBXCB_VERSION}.tar.gz && \
-        ACLOCAL_PATH="${PREFIX}/share/aclocal" ./autogen.sh && \
-        ./configure --prefix="${PREFIX}" --disable-static --enable-shared && \
-        make && \
-        make install && \
-        rm -rf ${DIR}
 
 ## libxml2 - for libbluray
 RUN \
@@ -598,6 +558,19 @@ RUN \
         make install && \
         rm -rf ${DIR}
 
+# zimg  https://github.com/sekrit-twc/zimg
+RUN \
+        DIR=/tmp/zimg && \
+        mkdir -p ${DIR} && \
+        cd ${DIR} && \
+        curl -sL https://github.com/sekrit-twc/zimg/archive/refs/tags/release-${ZIMG_VERSION}.tar.gz | \
+        tar -zx --strip-components=1 && \
+        ./autogen.sh && \
+        ./configure --prefix="${PREFIX}" --enable-shared  && \
+        make && \
+        make install && \
+        rm -rf ${DIR}
+
 ## Download ffmpeg https://ffmpeg.org/
 RUN  \
         DIR=/tmp/ffmpeg && mkdir -p ${DIR} && cd ${DIR} && \
@@ -640,8 +613,8 @@ RUN  \
         --enable-libwebp \
         --enable-libx264 \
         --enable-libx265 \
-        --enable-libxcb \
         --enable-libxvid \
+        --enable-libzimg \
         --enable-libzmq \
         --enable-nonfree \
         --enable-openssl \
@@ -761,7 +734,6 @@ RUN \
         libavcodec-dev \
         libavfilter-dev \
         libavformat-dev \
-        libavresample-dev \
         libavutil-dev \
         libswresample-dev \
         libswscale-dev && \
@@ -801,6 +773,48 @@ RUN \
         --sysconfdir=/config && \
     make && \
     make DESTDIR=/tvheadend install
+
+############## libdvbcsa ##############
+FROM base AS libdvbcsa
+
+RUN \
+    echo "**** install build packages ****" && \
+    apt-get update -yq && \
+    apt-get install -yq --no-install-recommends \
+        autoconf \
+        automake \
+        build-essential \
+        git \
+        libtool
+
+# copy patches
+COPY patches/libdvbcsa.patch /tmp/patches/
+
+RUN \
+    echo "**** libdvbcsa source ****" && \
+    git clone https://github.com/glenvt18/libdvbcsa.git /tmp/libdvbcsa && \
+    cd /tmp/libdvbcsa && \
+    git checkout 2a1e61e569a621c55c2426f235f42c2398b7f18f && \
+    echo "**** patch libdvbcsa with icam support****" && \
+    git config apply.whitespace nowarn && \
+    git apply /tmp/patches/libdvbcsa.patch && \
+    sed 's# == 4)# > 0)#' -i src/dvbcsa_pv.h
+
+WORKDIR /tmp/libdvbcsa
+RUN \
+    echo "**** compile libdvbcsa ****" && \
+    ./bootstrap && \
+    ./configure \
+        --enable-ssse3 \
+        --with-pic \
+        --prefix=/usr \
+        --sysconfdir=/etc \
+        --mandir=/usr/share/man \
+        --infodir=/usr/share/info \
+        --localstatedir=/var && \
+    make -j$(nproc) && \
+    make check && \
+    make DESTDIR=/libdvbcsa install
 
 ############# comskip ##############
 FROM base AS comskip
@@ -845,6 +859,7 @@ FROM base AS collector
 COPY --from=ffmpeg /usr/local/ /bar/usr/local/
 COPY --from=libiconv /libiconv/usr/ /bar/usr/
 COPY --from=tvheadend /tvheadend/usr/ /bar/usr/
+COPY --from=libdvbcsa /libdvbcsa/usr/ /bar/usr/
 COPY --from=comskip /comskip/usr/ /bar/usr/
 
 # COPY --from=ghcr.io/linuxserver/picons-builder /picons.tar.bz2 /picons.tar.bz2
@@ -875,11 +890,11 @@ RUN \
         `# comskip` \
         libargtable2-0 \
         `# tvheadend` \
+        bzip2 \
         curl \
         gzip \
         libavahi-common3 \
         libavahi-client3 \
-        libdvbcsa1 \
         libpcre2-8-0 \
         liburiparser1 \
         mesa-va-drivers \
