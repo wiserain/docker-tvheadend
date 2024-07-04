@@ -1,4 +1,0 @@
-#!/usr/bin/with-contenv bash
-
-exec \
-    s6-setuidgid abc /usr/bin/tvheadend -C -c /config $RUN_OPTS
