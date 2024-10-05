@@ -1,6 +1,6 @@
 ############## base image with libva driver ##############
 # https://gist.github.com/Brainiarc7/eb45d2e22afec7534f4a117d15fe6d89
-FROM ghcr.io/linuxserver/baseimage-ubuntu:jammy as base
+FROM ghcr.io/linuxserver/baseimage-ubuntu:jammy AS base
 
 ARG MAKEFLAGS="-j2"
 ARG DEBIAN_FRONTEND="noninteractive"
@@ -88,7 +88,7 @@ RUN \
 
 ############## build ffmpeg ##############
 # https://github.com/jrottenberg/ffmpeg/blob/main/docker-images/6.1/vaapi2204/Dockerfile
-FROM base as ffmpeg
+FROM base AS ffmpeg
 
 ENV         FFMPEG_VERSION=6.1.1 \
     AOM_VERSION=v3.8.1 \
