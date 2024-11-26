@@ -1,5 +1,5 @@
 # package version
-ARG BASE_IMAGE
+ARG BASE_IMAGE="ghcr.io/wiserain/tvhbase:latest"
 FROM $BASE_IMAGE
 LABEL maintainer="wiserain"
 LABEL org.opencontainers.image.source=https://github.com/wiserain/docker-tvheadend
