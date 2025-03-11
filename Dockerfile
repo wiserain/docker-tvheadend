@@ -1,4 +1,4 @@
-FROM ghcr.io/linuxserver/baseimage-alpine:3.20 AS base
+FROM ghcr.io/linuxserver/baseimage-alpine:3.21 AS base
 
 ############## tvheadend ##############
 FROM base AS tvheadend
@@ -175,7 +175,7 @@ RUN \
 WORKDIR /tmp/argtable
 RUN \
     echo "**** compile argtable2 ****" && \
-    ./configure \
+    CFLAGS="-include ctype.h -include string.h" ./configure \
         --prefix=/usr && \
     make -j$(nproc) && \
     make check && \
