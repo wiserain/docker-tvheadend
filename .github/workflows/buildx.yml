@@ -13,7 +13,7 @@ env:
 
 jobs:
   build-tvhbase-latest:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     steps:
       -
         name: Checkout
