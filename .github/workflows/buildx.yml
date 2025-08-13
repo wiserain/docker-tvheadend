@@ -17,6 +17,8 @@ env:
 jobs:
   build-tvhbase:
     runs-on: ubuntu-22.04
+    permissions:
+      packages: write
     if: github.actor == github.event.repository.owner.login
     strategy:
       matrix:
@@ -76,6 +78,8 @@ jobs:
     needs:
       - build-tvhbase
     runs-on: ubuntu-22.04
+    permissions:
+      packages: write
     if: github.actor == github.event.repository.owner.login
     strategy:
       matrix:
