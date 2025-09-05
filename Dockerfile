@@ -92,10 +92,10 @@ FROM base AS ffmpeg
 
 WORKDIR     /tmp/workdir
 
-ADD https://raw.githubusercontent.com/jrottenberg/ffmpeg/refs/heads/main/docker-images/6.1/vaapi2404/generate-source-of-truth-ffmpeg-versions.py /tmp/workdir
-ADD https://raw.githubusercontent.com/jrottenberg/ffmpeg/refs/heads/main/docker-images/6.1/vaapi2404/download_tarballs.sh /tmp/workdir
-ADD https://raw.githubusercontent.com/jrottenberg/ffmpeg/refs/heads/main/docker-images/6.1/vaapi2404/build_source.sh /tmp/workdir
-ADD https://raw.githubusercontent.com/jrottenberg/ffmpeg/refs/heads/main/docker-images/6.1/vaapi2404/install_ffmpeg.sh /tmp/workdir
+ADD https://raw.githubusercontent.com/jrottenberg/ffmpeg/refs/heads/release/6/docker-images/6.1/vaapi2404/generate-source-of-truth-ffmpeg-versions.py /tmp/workdir
+ADD https://raw.githubusercontent.com/jrottenberg/ffmpeg/refs/heads/release/6/docker-images/6.1/vaapi2404/download_tarballs.sh /tmp/workdir
+ADD https://raw.githubusercontent.com/jrottenberg/ffmpeg/refs/heads/release/6/docker-images/6.1/vaapi2404/build_source.sh /tmp/workdir
+ADD https://raw.githubusercontent.com/jrottenberg/ffmpeg/refs/heads/release/6/docker-images/6.1/vaapi2404/install_ffmpeg.sh /tmp/workdir
 
 
 ENV FFMPEG_VERSION=6.1.2
