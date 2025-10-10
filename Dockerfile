@@ -1,4 +1,4 @@
-FROM ghcr.io/linuxserver/baseimage-alpine:3.21 AS base
+FROM ghcr.io/linuxserver/baseimage-alpine:3.22 AS base
 
 ############## tvheadend ##############
 FROM base AS tvheadend
