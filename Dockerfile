@@ -64,8 +64,13 @@ RUN \
     rm -rf /usr/include/iconv.h && \
     cp /usr/include/gnu-libiconv/iconv.h /usr/include/iconv.h
 
+# copy patches
+COPY patches/nlmsg_len.patch /tmp/patches/
+
 WORKDIR /tmp/tvheadend
 RUN \
+    echo "**** append nlmsg_len.patch to hdhomerun.diff ****" && \
+    cat /tmp/patches/nlmsg_len.patch >> support/patches/hdhomerun.diff && \
     echo "**** compile tvheadend ****" && \
     ./configure \
         `#Encoding` \
