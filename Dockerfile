@@ -37,7 +37,6 @@ RUN \
         libcurl \
         libdvbcsa-dev \
         libgcrypt-dev \
-        libhdhomerun-dev \
         libtool \
         libva-dev \
         libvpx-dev \
@@ -90,7 +89,7 @@ RUN \
         --disable-bintray_cache \
         --disable-execinfo \
         --enable-dvbcsa \
-        --disable-hdhomerun_static \
+        --enable-hdhomerun_static \
         --enable-hdhomerun_client \
         --enable-libav \
         --enable-pngquant \
@@ -246,7 +245,6 @@ RUN \
         libcrypto3 \
         libcurl \
         libssl3 \
-        libhdhomerun-libs \
         libva \
         $([ "$TARGETARCH" = "amd64" ] && echo "libva-intel-driver") \
         $([ "$TARGETARCH" = "amd64" ] && echo "intel-media-driver") \
