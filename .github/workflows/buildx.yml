@@ -109,11 +109,12 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
       -
         name: Load Variables
+        id: vars
         run: |
           CID=$(docker run -d ${{ env.BASE_IMAGE }}:${{ matrix.branch }})
           BUILD=$(docker exec $CID tvheadend -v | awk -F'[_ ]' '{print $NF}' | awk -F'[_~]' '{print $1}')
           docker rm -f $CID
-          echo "TVH_BUILD=$BUILD" >> $GITHUB_ENV
+          echo "tvh_build=$BUILD" >> $GITHUB_OUTPUT
       -
         name: Build and push
         if: matrix.branch != 'ubuntu'
@@ -125,9 +126,9 @@ jobs:
           push: true
           tags: |
             ${{ env.IMAGE_NAME }}:${{ matrix.branch }}
-            ${{ env.IMAGE_NAME }}:${{ matrix.branch }}-${{ env.TVH_BUILD }}
+            ${{ env.IMAGE_NAME }}:${{ matrix.branch }}-${{ steps.vars.outputs.tvh_build }}
             ghcr.io/${{ env.IMAGE_NAME }}:${{ matrix.branch }}
-            ghcr.io/${{ env.IMAGE_NAME }}:${{ matrix.branch }}-${{ env.TVH_BUILD }}
+            ghcr.io/${{ env.IMAGE_NAME }}:${{ matrix.branch }}-${{ steps.vars.outputs.tvh_build }}
           build-args: |
             BASE_IMAGE=${{ env.BASE_IMAGE }}:${{ matrix.branch }}
       -
@@ -141,9 +142,9 @@ jobs:
           push: true
           tags: |
             ${{ env.IMAGE_NAME }}:${{ matrix.branch }}
-            ${{ env.IMAGE_NAME }}:${{ matrix.branch }}-${{ env.TVH_BUILD }}
+            ${{ env.IMAGE_NAME }}:${{ matrix.branch }}-${{ steps.vars.outputs.tvh_build }}
             ghcr.io/${{ env.IMAGE_NAME }}:${{ matrix.branch }}
-            ghcr.io/${{ env.IMAGE_NAME }}:${{ matrix.branch }}-${{ env.TVH_BUILD }}
+            ghcr.io/${{ env.IMAGE_NAME }}:${{ matrix.branch }}-${{ steps.vars.outputs.tvh_build }}
           build-args: |
             BASE_IMAGE=${{ env.BASE_IMAGE }}:${{ matrix.branch }}
       -
@@ -155,6 +156,6 @@ jobs:
           status: ${{ job.status }}
           description: |
             ${{ env.IMAGE_NAME }}:${{ matrix.branch }}
-            ${{ env.IMAGE_NAME }}:${{ matrix.branch }}-${{ env.TVH_BUILD }}
+            ${{ env.IMAGE_NAME }}:${{ matrix.branch }}-${{ steps.vars.outputs.tvh_build }}
             ghcr.io/${{ env.IMAGE_NAME }}:${{ matrix.branch }}
-            ghcr.io/${{ env.IMAGE_NAME }}:${{ matrix.branch }}-${{ env.TVH_BUILD }}
+            ghcr.io/${{ env.IMAGE_NAME }}:${{ matrix.branch }}-${{ steps.vars.outputs.tvh_build }}
