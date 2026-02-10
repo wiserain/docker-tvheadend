@@ -367,8 +367,6 @@ COPY --from=libiconv /libiconv/usr/ /usr/
 
 WORKDIR /tmp/tvheadend
 RUN \
-    echo "**** replace LIBX265_URL in Makefile.ffmpeg ****" && \
-    sed -i 's|^LIBX265_URL.*=.*|LIBX265_URL     = https://ftp.videolan.org/pub/videolan/x265/$(LIBX265_TB)|' Makefile.ffmpeg && \
     echo "**** compile tvheadend ****" && \
     ./configure \
         `#Encoding` \
