@@ -45,7 +45,7 @@ jobs:
       -
         name: Build and push
         if: matrix.branch != 'ubuntu'
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           context: .
           file: ./Dockerfile
@@ -56,7 +56,7 @@ jobs:
       -
         name: Build and push (ubuntu)
         if: matrix.branch == 'ubuntu'
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           context: .
           file: ./Dockerfile
@@ -118,7 +118,7 @@ jobs:
       -
         name: Build and push
         if: matrix.branch != 'ubuntu'
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           context: .
           file: ./Dockerfile
@@ -134,7 +134,7 @@ jobs:
       -
         name: Build and push (ubuntu)
         if: matrix.branch == 'ubuntu'
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           context: .
           file: ./Dockerfile.ubuntu
