@@ -28,7 +28,6 @@ RUN \
         jq \
         python3 \
         python3-bs4 \
-        python3-cffi \
         python3-lxml \
         python3-pip \
         python3-requests \
