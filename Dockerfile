@@ -19,15 +19,9 @@ RUN \
         libtool \
         pkg-config \
         wget && \
-    echo "**** the latest development headers for libva ****" && \
-    apt-get install -yq \
-        software-properties-common && \
-    add-apt-repository ppa:oibaf/graphics-drivers && \
-    apt-get update -yq && \
-    apt-get upgrade -yq && \
-    apt-get dist-upgrade -yq && \
     echo "**** compile libva ****" && \
     apt-get install -yq --no-install-recommends \
+        curl \
         valgrind \
         libdrm-dev \
         libx11-dev \
@@ -67,10 +61,8 @@ RUN \
         pkg-config \
         wget \
         \
-        `#headers` \
-        software-properties-common \
-        \
         `#libva` \
+        curl \
         libdrm-dev \
         libx11-dev \
         xorg-dev && \
