@@ -20,15 +20,10 @@ jobs:
     permissions:
       packages: write
     if: github.actor == github.event.repository.owner.login
-    strategy:
-      matrix:
-        branch: [latest, ubuntu]
     steps:
       -
         name: Checkout
         uses: actions/checkout@v7
-        with:
-          ref: ${{ matrix.branch }}
       -
         name: Set up QEMU
         uses: docker/setup-qemu-action@v4
@@ -44,26 +39,14 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
       -
         name: Build and push
-        if: matrix.branch != 'ubuntu'
         uses: docker/build-push-action@v7
         with:
-          context: .
-          file: ./Dockerfile
+          context: ./base
+          file: ./base/Dockerfile
           platforms: linux/amd64,linux/arm64
           push: true
           tags: |
-            ${{ env.BASE_IMAGE }}:${{ matrix.branch }}
-      -
-        name: Build and push (ubuntu)
-        if: matrix.branch == 'ubuntu'
-        uses: docker/build-push-action@v7
-        with:
-          context: .
-          file: ./Dockerfile
-          platforms: linux/amd64
-          push: true
-          tags: |
-            ${{ env.BASE_IMAGE }}:${{ matrix.branch }}
+            ${{ env.BASE_IMAGE }}:latest
       -
         name: Send Notification
         uses: sarisia/actions-status-discord@v1
@@ -72,7 +55,7 @@ jobs:
           webhook: ${{ secrets.DISCORD_WEBHOOK }}
           status: ${{ job.status }}
           description: |
-            ${{ env.BASE_IMAGE }}:${{ matrix.branch }}
+            ${{ env.BASE_IMAGE }}:latest
 
   build-tvheadend:
     needs:
@@ -81,9 +64,6 @@ jobs:
     permissions:
       packages: write
     if: github.actor == github.event.repository.owner.login
-    strategy:
-      matrix:
-        branch: [latest, ubuntu]
     steps:
       -
         name: Checkout
@@ -111,13 +91,12 @@ jobs:
         name: Load Variables
         id: vars
         run: |
-          CID=$(docker run -d ${{ env.BASE_IMAGE }}:${{ matrix.branch }})
+          CID=$(docker run -d ${{ env.BASE_IMAGE }}:latest)
           BUILD=$(docker exec $CID tvheadend -v | awk -F'[_ ]' '{print $NF}' | awk -F'[_~]' '{print $1}')
           docker rm -f $CID
           echo "tvh_build=$BUILD" >> $GITHUB_OUTPUT
       -
         name: Build and push
-        if: matrix.branch != 'ubuntu'
         uses: docker/build-push-action@v7
         with:
           context: .
@@ -125,28 +104,12 @@ jobs:
           platforms: linux/amd64,linux/arm64
           push: true
           tags: |
-            ${{ env.IMAGE_NAME }}:${{ matrix.branch }}
-            ${{ env.IMAGE_NAME }}:${{ matrix.branch }}-${{ steps.vars.outputs.tvh_build }}
-            ghcr.io/${{ env.IMAGE_NAME }}:${{ matrix.branch }}
-            ghcr.io/${{ env.IMAGE_NAME }}:${{ matrix.branch }}-${{ steps.vars.outputs.tvh_build }}
+            ${{ env.IMAGE_NAME }}:latest
+            ${{ env.IMAGE_NAME }}:${{ steps.vars.outputs.tvh_build }}
+            ghcr.io/${{ env.IMAGE_NAME }}:latest
+            ghcr.io/${{ env.IMAGE_NAME }}:${{ steps.vars.outputs.tvh_build }}
           build-args: |
-            BASE_IMAGE=${{ env.BASE_IMAGE }}:${{ matrix.branch }}
-      -
-        name: Build and push (ubuntu)
-        if: matrix.branch == 'ubuntu'
-        uses: docker/build-push-action@v7
-        with:
-          context: .
-          file: ./Dockerfile.ubuntu
-          platforms: linux/amd64
-          push: true
-          tags: |
-            ${{ env.IMAGE_NAME }}:${{ matrix.branch }}
-            ${{ env.IMAGE_NAME }}:${{ matrix.branch }}-${{ steps.vars.outputs.tvh_build }}
-            ghcr.io/${{ env.IMAGE_NAME }}:${{ matrix.branch }}
-            ghcr.io/${{ env.IMAGE_NAME }}:${{ matrix.branch }}-${{ steps.vars.outputs.tvh_build }}
-          build-args: |
-            BASE_IMAGE=${{ env.BASE_IMAGE }}:${{ matrix.branch }}
+            BASE_IMAGE=${{ env.BASE_IMAGE }}:latest
       -
         name: Send Notification
         uses: sarisia/actions-status-discord@v1
@@ -155,7 +118,7 @@ jobs:
           webhook: ${{ secrets.DISCORD_WEBHOOK }}
           status: ${{ job.status }}
           description: |
-            ${{ env.IMAGE_NAME }}:${{ matrix.branch }}
-            ${{ env.IMAGE_NAME }}:${{ matrix.branch }}-${{ steps.vars.outputs.tvh_build }}
-            ghcr.io/${{ env.IMAGE_NAME }}:${{ matrix.branch }}
-            ghcr.io/${{ env.IMAGE_NAME }}:${{ matrix.branch }}-${{ steps.vars.outputs.tvh_build }}
+            ${{ env.IMAGE_NAME }}:latest
+            ${{ env.IMAGE_NAME }}:${{ steps.vars.outputs.tvh_build }}
+            ghcr.io/${{ env.IMAGE_NAME }}:latest
+            ghcr.io/${{ env.IMAGE_NAME }}:${{ steps.vars.outputs.tvh_build }}

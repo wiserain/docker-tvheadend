@@ -67,12 +67,12 @@ Socket으로 직접 밀어 넣는 external grabber와 달리 내부적으로 cro
 ### 이미지 태그 네이밍 규칙
 
 ```text
-{main_tag}-{tvh_ver}
+{tvh_ver}
 ```
 
 |  | 선택 가능한 값 | 설명  |
 |---|---|---|
-| ```main_tag```  | ```latest```, ```ubuntu``` | - **latest**: 최신 이미지 버전. [새로운 기능](https://tvheadend.org/projects/tvheadend/roadmap)을 체험할 수 있는 개발 버전으로 약간 불안정할 수 있다.<br> - **ubuntu**: latest 태그와 같은 tvheadend 버전을 따르지만, alpine 대신 ubuntu를 기반으로 빌드하였다. |
+| ```latest```  | ```latest``` | 최신 이미지 버전. [새로운 기능](https://tvheadend.org/projects/tvheadend/roadmap)을 체험할 수 있는 개발 버전으로 약간 불안정할 수 있다. |
 | ```tvh_ver``` |  | 형식은 {tvheadend version}-{build number} 이며 생략할 경우 최신 빌드를 따름 |
 
 모든 조합이 가능하지는 않으며, 사용 가능한 이미지 버전은 [여기](https://hub.docker.com/r/wiserain/tvheadend/tags/)서 확인할 수 있다. 특별한 일이 없으면 매주 한 번 새롭게 빌드 된다.

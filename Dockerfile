@@ -4,6 +4,8 @@ FROM $BASE_IMAGE
 LABEL maintainer="wiserain"
 LABEL org.opencontainers.image.source=https://github.com/wiserain/docker-tvheadend
 
+ARG DEBIAN_FRONTEND="noninteractive"
+
 # default variables
 ENV TZ="Asia/Seoul" \
     EPG2XML_CONFIG="/epg2xml/epg2xml.json" \
@@ -14,27 +16,32 @@ ENV TZ="Asia/Seoul" \
 COPY root/ /
 
 RUN \
-    echo "**** set permissions on tv_grab_files ****" && \
+    echo "**** set permissions for scripts /usr/bin ****" && \
     chmod 555 /usr/bin/tv_grab_* && \
     echo "**** remove irrelevant grabbers ****" && \
     xargs rm -f < /tmp/tv_grab_irr.list && \
     echo "**** install dependencies for epg2xml" && \
-    apk add --no-cache \
+    chmod 777 /tmp && \
+    apt-get update -yq && \
+    apt-get install -yq --no-install-recommends \
         git \
         jq \
         python3 \
-        py3-beautifulsoup4 \
-        py3-cffi \
-        py3-lxml \
-        py3-requests \
-        perl-xml-twig && \
+        python3-bs4 \
+        python3-lxml \
+        python3-pip \
+        python3-requests \
+        xml-twig-tools && \
+    rm /usr/lib/python*/EXTERNALLY-MANAGED && \
     echo "**** install epg2xml ****" && \
     EPG2XML_VER=$(wget --no-check-certificate -O - -o /dev/null "https://api.github.com/repos/epg2xml/epg2xml/releases/latest" | awk '/tag_name/{print $4;exit}' FS='[""]') && \
     python3 -m pip install "epg2xml[all] @ git+https://github.com/epg2xml/epg2xml.git@${EPG2XML_VER}" && \
     echo "**** cleanup ****" && \
     rm -rf \
         /tmp/* \
-        /var/cache/apk/*
+        /var/tmp/* \
+        /var/cache/* \
+        /var/lib/apt/lists/*
 
 # ports and volumes
 EXPOSE 9981 9982 9983
