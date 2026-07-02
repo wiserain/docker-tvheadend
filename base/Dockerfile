@@ -78,29 +78,6 @@ RUN \
         /var/cache/* \
         /var/lib/apt/lists/*
 
-############## libiconv ##############
-FROM base AS libiconv
-
-RUN \
-    echo "**** install basic build tools ****" && \
-    apt-get update -yq && \
-    apt-get install -yq --no-install-recommends \
-        build-essential \
-        wget
-
-RUN \
-    echo "**** libiconv source ****" && \
-    wget https://ftp.gnu.org/pub/gnu/libiconv/libiconv-1.18.tar.gz -P /tmp/ && \
-    mkdir -p /tmp/libiconv && \
-    tar -C /tmp/libiconv -xzf /tmp/libiconv-1.18.tar.gz --strip-components=1
-
-WORKDIR /tmp/libiconv
-RUN \
-    echo "**** compile libiconv ****" && \
-    ./configure && \
-    make VERBOSE=1 && \
-    make DESTDIR=/libiconv install
-
 ############## tvheadend ##############
 FROM base AS tvheadend
 
@@ -167,9 +144,6 @@ RUN \
         libswscale-dev && \
     echo "**** setting default /usr/bin/python ****" && \
     if [ ! -e /usr/bin/python ]; then ln -sf /usr/bin/python3 /usr/bin/python; fi
-
-# copy deps
-COPY --from=libiconv /libiconv/usr/ /usr/
 
 WORKDIR /tmp/tvheadend
 RUN \
@@ -244,51 +218,11 @@ RUN \
     make check && \
     make DESTDIR=/libdvbcsa install
 
-############# comskip ##############
-FROM base AS comskip
-
-RUN \
-    echo "**** install basic build tools ****" && \
-    apt-get update -yq && \
-    apt-get install -yq --no-install-recommends \
-        autoconf \
-        automake \
-        build-essential \
-        git \
-        libtool \
-        pkg-config
-
-RUN \
-    echo "***** comskip source ****" && \
-    git clone https://github.com/erikkaashoek/Comskip /tmp/comskip
-
-RUN \
-    echo "**** install build-deps ****" && \
-    apt-get update -yq && \
-    apt-get install -yq --no-install-recommends \
-        libargtable2-dev \
-        libavcodec-dev \
-        libavformat-dev \
-        libavutil-dev \
-        libswscale-dev
-
-WORKDIR /tmp/comskip
-RUN \
-    echo "***** compile comskip ****" && \
-    ./autogen.sh && \
-    ./configure \
-        --bindir=/usr/bin \
-        --sysconfdir=/config/comskip && \
-    make && \
-    make DESTDIR=/comskip install
-
 ############## collect stage ##############
 FROM base AS collector
 
-COPY --from=libiconv /libiconv/usr/ /bar/usr/
 COPY --from=tvheadend /tvheadend/usr/ /bar/usr/
 COPY --from=libdvbcsa /libdvbcsa/usr/ /bar/usr/
-COPY --from=comskip /comskip/usr/ /bar/usr/
 
 # COPY --from=ghcr.io/linuxserver/picons-builder /picons.tar.bz2 /picons.tar.bz2
 # RUN mkdir -p /bar/picons && tar xf /picons.tar.bz2 -C /bar/picons
@@ -311,11 +245,10 @@ RUN \
     apt-get install -yq  --no-install-recommends \
         `# ffmpeg` \
         ca-certificates \
+        comskip \
         expat \
         ffmpeg \
         libgomp1 \
-        `# comskip` \
-        libargtable2-0 \
         `# tvheadend` \
         bzip2 \
         curl \
