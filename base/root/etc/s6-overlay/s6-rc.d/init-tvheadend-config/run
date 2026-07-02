@@ -1,0 +1,29 @@
+#!/usr/bin/with-contenv bash
+# shellcheck shell=bash
+
+# make folders
+mkdir -p \
+    /config/comskip
+
+# copy config
+if [[ ! -e /config/dvr/config ]]; then
+    (mkdir -p /config/dvr/config && cp /defaults/7a5edfbe189851e5b1d1df19c93962f0 /config/dvr/config/7a5edfbe189851e5b1d1df19c93962f0)
+fi
+if [[ ! -e /config/comskip/comskip.ini ]]; then
+    cp /defaults/comskip.ini.org /config/comskip/comskip.ini
+fi
+if [[ ! -e /config/config ]]; then
+    (cp /defaults/config /config/config)
+fi
+
+# permissions
+echo "Setting permissions"
+# lsiown -R abc:abc /config
+abc_dirs=( \
+    /config \
+    /picons \
+)
+for i in "${abc_dirs[@]}"; do
+    find "${i}" \! \( -uid "$(id -u abc)" -gid "$(id -g abc)" \) -print0 | \
+        xargs -0 --no-run-if-empty chown -h abc:abc
+done
