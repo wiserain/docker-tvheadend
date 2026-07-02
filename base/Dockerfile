@@ -25,6 +25,7 @@ FROM builder AS tvheadend
 
 ARG MAKEFLAGS="-j2"
 ARG DEBIAN_FRONTEND="noninteractive"
+ARG TARGETARCH
 ARG TVHEADEND_COMMIT
 
 RUN \
@@ -56,6 +57,7 @@ RUN \
         pngquant \
         python3-requests \
         python3-setuptools \
+        $([ "$TARGETARCH" != "amd64" ] && echo "libavcodec-dev libavfilter-dev libavformat-dev libavutil-dev libopus-dev libswresample-dev libswscale-dev libvpx-dev libx264-dev libx265-dev") \
         zlib1g-dev && \
     echo "**** setting default /usr/bin/python ****" && \
     if [ ! -e /usr/bin/python ]; then ln -sf /usr/bin/python3 /usr/bin/python; fi
@@ -63,16 +65,30 @@ RUN \
 WORKDIR /tmp/tvheadend
 RUN \
     echo "**** compile tvheadend ****" && \
+    if [ "$TARGETARCH" = "amd64" ]; then \
+        TVH_CONFIGURE_ARCH="\
+            --enable-ffmpeg_static \
+            --enable-libopus --enable-libopus_static \
+            --enable-libvorbis --enable-libvorbis_static \
+            --enable-libvpx --enable-libvpx_static \
+            --enable-libx264 --enable-libx264_static \
+            --enable-libx265 --enable-libx265_static \
+            --enable-libfdkaac --enable-libfdkaac_static \
+            --enable-libtheora --enable-libtheora_static"; \
+    else \
+        TVH_CONFIGURE_ARCH="\
+            --arch=arm64 \
+            --disable-ffmpeg_static \
+            --disable-libopus_static \
+            --disable-libvorbis_static \
+            --disable-libvpx_static \
+            --disable-libx264_static \
+            --disable-libx265_static \
+            --disable-libfdkaac_static \
+            --disable-libtheora_static"; \
+    fi && \
     ./configure \
-        `#Encoding` \
-        --enable-ffmpeg_static \
-        --enable-libopus \
-        --enable-libvorbis \
-        --enable-libvpx \
-        --enable-libx264 \
-        --enable-libx265 \
-        --enable-libfdkaac \
-        \
+        ${TVH_CONFIGURE_ARCH} \
         `#Options` \
         --disable-bintray_cache \
         --enable-dvbcsa \
