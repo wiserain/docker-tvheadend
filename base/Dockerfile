@@ -54,6 +54,7 @@ RUN \
         libva-dev \
         # libx11-dev \
         markdown \
+        npm \
         pngquant \
         python3-requests \
         python3-setuptools \
