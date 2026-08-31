@@ -122,7 +122,7 @@ RUN \
     git checkout 2a1e61e569a621c55c2426f235f42c2398b7f18f
 
 # copy patches
-COPY base/patches/libdvbcsa.patch /tmp/patches/
+COPY patches/libdvbcsa.patch /tmp/patches/
 
 RUN \
     cd /tmp/libdvbcsa && \
@@ -157,7 +157,7 @@ COPY --from=libdvbcsa /libdvbcsa/usr/ /bar/usr/
 # RUN mkdir -p /bar/picons && tar xf /picons.tar.bz2 -C /bar/picons
 RUN mkdir -p /bar/picons
 
-COPY base/root/ /bar/
+COPY root/base/ /bar/
 
 ############## runtime base stage ##############
 FROM base AS tvhbase
@@ -252,7 +252,7 @@ RUN \
 
 # copy application files after dependency installation so source changes do not
 # invalidate the expensive apt/pip layer above
-COPY root/ /
+COPY root/apps/ /
 
 RUN \
     echo "**** set permissions for scripts /usr/bin ****" && \
