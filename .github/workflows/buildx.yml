@@ -13,12 +13,19 @@ env:
   DOCKERHUB_USER: wiserain
   IMAGE_NAME: wiserain/tvheadend
 
+defaults:
+  run:
+    shell: bash
+
 jobs:
-  build-tvheadend:
+  buildx:
     runs-on: ubuntu-latest
     permissions:
       contents: read
       packages: write
+    concurrency:
+      group: ${{ github.workflow }}
+      cancel-in-progress: false
     if: github.actor == github.event.repository.owner.login
     steps:
       -
@@ -46,7 +53,6 @@ jobs:
       -
         name: Resolve upstream versions
         id: upstream
-        shell: bash
         run: |
           set -euo pipefail
 
@@ -59,7 +65,8 @@ jobs:
           echo "tvheadend_commit=$TVHEADEND_COMMIT" >> "$GITHUB_OUTPUT"
           echo "epg2xml_ver=$EPG2XML_VER" >> "$GITHUB_OUTPUT"
       -
-        name: Build and push latest image
+        name: Build and Push
+        id: build
         uses: docker/build-push-action@v7
         with:
           context: .
@@ -68,43 +75,44 @@ jobs:
           push: true
           pull: true
           tags: |
-            ${{ env.IMAGE_NAME }}:latest
-            ghcr.io/${{ env.IMAGE_NAME }}:latest
+            ${{ env.IMAGE_NAME }}:ci
+            ghcr.io/${{ env.IMAGE_NAME }}:ci
           build-args: |
             TVHEADEND_COMMIT=${{ steps.upstream.outputs.tvheadend_commit }}
             EPG2XML_VER=${{ steps.upstream.outputs.epg2xml_ver }}
-          cache-from: |
-            type=registry,ref=ghcr.io/${{ env.IMAGE_NAME }}:buildcache
-          cache-to: |
-            type=registry,ref=ghcr.io/${{ env.IMAGE_NAME }}:buildcache,mode=max,image-manifest=true,oci-mediatypes=true
+          cache-from: type=registry,ref=ghcr.io/${{ env.IMAGE_NAME }}:buildcache
+          cache-to: type=registry,ref=ghcr.io/${{ env.IMAGE_NAME }}:buildcache,mode=max,image-manifest=true,oci-mediatypes=true
           no-cache: ${{ github.event_name == 'schedule' }}
       -
-        name: Load image version
-        id: vars
-        shell: bash
+        name: Verify Image
+        id: verify
+        env:
+          IMAGE_DIGEST: ${{ steps.build.outputs.digest }}
         run: |
           set -euo pipefail
 
-          CID=$(docker run -d ghcr.io/${{ env.IMAGE_NAME }}:latest)
+          test -n "$IMAGE_DIGEST"
+
+          CID=$(docker run -d "ghcr.io/${{ env.IMAGE_NAME }}@$IMAGE_DIGEST")
           trap 'docker rm -f "$CID" >/dev/null 2>&1 || true' EXIT
           BUILD=$(docker exec "$CID" tvheadend -v | awk -F'[_ ]' '{print $NF}' | awk -F'[_~]' '{print $1}')
 
           test -n "$BUILD"
           echo "tvh_build=$BUILD" >> "$GITHUB_OUTPUT"
       -
-        name: Publish version tags
-        shell: bash
-        env:
-          TVH_BUILD: ${{ steps.vars.outputs.tvh_build }}
+        name: Promote Tags
         run: |
           set -euo pipefail
 
           docker buildx imagetools create \
-            --tag "${{ env.IMAGE_NAME }}:${TVH_BUILD}" \
-            "${{ env.IMAGE_NAME }}:latest"
+            --tag "${{ env.IMAGE_NAME }}:latest" \
+            --tag "${{ env.IMAGE_NAME }}:${{ steps.verify.outputs.tvh_build }}" \
+            "${{ env.IMAGE_NAME }}@${{ steps.build.outputs.digest }}"
+
           docker buildx imagetools create \
-            --tag "ghcr.io/${{ env.IMAGE_NAME }}:${TVH_BUILD}" \
-            "ghcr.io/${{ env.IMAGE_NAME }}:latest"
+            --tag "ghcr.io/${{ env.IMAGE_NAME }}:latest" \
+            --tag "ghcr.io/${{ env.IMAGE_NAME }}:${{ steps.verify.outputs.tvh_build }}" \
+            "ghcr.io/${{ env.IMAGE_NAME }}@${{ steps.build.outputs.digest }}"
       -
         name: Send Notification
         uses: sarisia/actions-status-discord@v1
@@ -114,6 +122,6 @@ jobs:
           status: ${{ job.status }}
           description: |
             ${{ env.IMAGE_NAME }}:latest
-            ${{ env.IMAGE_NAME }}:${{ steps.vars.outputs.tvh_build }}
+            ${{ env.IMAGE_NAME }}:${{ steps.verify.outputs.tvh_build }}
             ghcr.io/${{ env.IMAGE_NAME }}:latest
-            ghcr.io/${{ env.IMAGE_NAME }}:${{ steps.vars.outputs.tvh_build }}
+            ghcr.io/${{ env.IMAGE_NAME }}:${{ steps.verify.outputs.tvh_build }}
